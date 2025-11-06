@@ -1,0 +1,41 @@
+{
+  "$schema": "https://docs.claude.com/schemas/plugin-manifest.json",
+  "name": "plugin-name",
+  "version": "1.0.0",
+  "description": "Brief description of what this plugin provides",
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/username/plugin-name",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/plugin-name.git"
+  },
+  "keywords": [
+    "keyword1",
+    "keyword2",
+    "category"
+  ],
+  "commands": [
+    "./commands/command1.md",
+    "./commands/command2.md"
+  ],
+  "agents": [],
+  "dependencies": {
+    "required": [
+      "python>=3.8",
+      "package-name>=1.0.0"
+    ],
+    "optional": [
+      "optional-package>=2.0.0"
+    ]
+  },
+  "configuration": {
+    "settings": {
+      "setting_name": {
+        "type": "string",
+        "default": "value",
+        "description": "Description of this setting"
+      }
+    }
+  }
+}

@@ -1,0 +1,168 @@
+* [HH:MM] Project - Experiment/Calculation Description
+:PROPERTIES:
+:ID: YYYY-MM-DD-NNN
+:PROJECT: Project_Name
+:TYPE: Experiment|Calculation|Simulation
+:STATUS: Planning|In_Progress|Complete
+:STARTED: [YYYY-MM-DD Day HH:MM]
+:RELATED:
+:DATA:
+:END:
+
+** Objective
+Clear statement of what you're trying to accomplish.
+
+** Hypothesis
+What you expect to happen and why.
+
+Example: Based on literature precedent (Smith 2024), we expect
+the adsorption energy to be approximately -1.5 eV for FCC binding.
+
+** Background/Context
+- Why is this work important?
+- What previous work led to this experiment?
+- What are the key questions being addressed?
+
+Related work: [[file:YYYY-MM-DD.org::*Previous Entry]]
+
+** Methods
+*** Experimental/Computational Setup
+Detailed description of how the work was performed.
+
+#+BEGIN_SRC python
+# Include actual code used
+from ase.build import fcc111
+slab = fcc111('Pt', size=(4, 4, 4), vacuum=10.0)
+# ... rest of setup ...
+#+END_SRC
+
+*** Parameters
+| Parameter          | Value        | Units | Notes                  |
+|--------------------+--------------+-------+------------------------|
+| Temperature        | 300          | K     | Room temperature       |
+| Pressure           | 1            | atm   | Standard conditions    |
+| DFT Functional     | PBE          | -     | Standard GGA           |
+| Energy Cutoff      | 400          | eV    | Converged              |
+| k-points           | 6×6×1        | -     | Monkhorst-Pack grid    |
+| Force Convergence  | 0.05         | eV/Å  | Standard criterion     |
+
+*** Materials/Software
+- Software: VASP 6.4.2
+- Python: 3.11.4
+- ASE: 3.23.0
+- Computing cluster: cluster.university.edu
+
+*** Procedure
+1. Step 1
+2. Step 2
+3. Step 3
+
+** Results
+*** Observations
+What actually happened? Include direct observations before interpretation.
+
+*** Raw Data
+#+BEGIN_SRC bash :results output
+# Commands to extract data
+grep "energy" OUTCAR | tail -1
+#+END_SRC
+
+#+RESULTS:
+:
+
+*** Processed Data
+| Sample/System | Observable | Value     | Uncertainty | Units |
+|---------------+------------+-----------+-------------+-------|
+| System 1      | Energy     | -123.456  | ±0.001      | eV    |
+| System 2      | Energy     | -125.789  | ±0.001      | eV    |
+
+*** Figures
+#+BEGIN_SRC python :results file
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Analysis and plotting code
+# ...
+plt.savefig('data/YYYY-MM-DD/figure_name.png', dpi=300)
+return 'data/YYYY-MM-DD/figure_name.png'
+#+END_SRC
+
+#+RESULTS:
+[[file:data/YYYY-MM-DD/figure_name.png]]
+
+#+CAPTION: Description of figure
+#+NAME: fig:label
+[[file:data/YYYY-MM-DD/figure_name.png]]
+
+** Analysis
+*** Interpretation
+What do these results mean?
+
+- Key observation 1
+- Key observation 2
+
+*** Comparison with Literature/Theory
+How do results compare with expected values?
+
+| This Work | Literature | Reference     | Agreement |
+|-----------+------------+---------------+-----------|
+| -1.82     | -1.60      | Smith (2024)  | Good      |
+
+*** Unexpected Findings
+Document anything surprising or anomalous.
+
+*** Error Analysis
+Sources of uncertainty and their impact.
+
+** Conclusions
+- Key finding 1
+- Key finding 2
+- Hypothesis: Supported / Rejected / Inconclusive
+
+Confidence level: High / Medium / Low
+Reasoning:
+
+** Issues/Problems Encountered
+Document any problems and how they were resolved.
+
+*** Problem 1
+Description:
+Solution:
+Time lost: X hours
+
+** Data Management
+*** Files Generated
+- Raw data: [[file:./data/YYYY-MM-DD/raw/]]
+- Processed data: [[file:./data/YYYY-MM-DD/processed/results.csv]]
+- Analysis code: [[file:./data/YYYY-MM-DD/analysis.py]]
+- Figures: [[file:./data/YYYY-MM-DD/figures/]]
+
+*** Archive
+Location: ~/archives/YYYY/MM/experiment_NNN.tar.gz
+Date archived: [YYYY-MM-DD]
+
+*** Checksums
+- file1.dat: md5sum_here
+- file2.dat: md5sum_here
+
+** Reproducibility Checklist
+- [ ] All parameters documented
+- [ ] Software versions recorded
+- [ ] Random seeds specified (if applicable)
+- [ ] Input files included or linked
+- [ ] Analysis code included
+- [ ] Data files archived
+- [ ] Figures source data available
+
+** Next Steps
+- [ ] Task 1
+- [ ] Task 2
+- [ ] Task 3
+
+Scheduled for: [YYYY-MM-DD]
+
+** References
+- Previous work: [[file:YYYY-MM-DD.org::*Entry Title]]
+- Literature: Author et al. (Year) DOI:
+- Code repository: [[file:~/projects/project-name/]]
+- Lab notebook: Page XX

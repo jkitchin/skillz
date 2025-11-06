@@ -1,0 +1,195 @@
+* [HH:MM] Data Analysis - Description
+:PROPERTIES:
+:ID: YYYY-MM-DD-NNN
+:PROJECT: Project_Name
+:TYPE: Analysis
+:STATUS: In_Progress
+:RELATED:
+:END:
+
+** Objective
+What question are you trying to answer with this analysis?
+
+** Data Sources
+List all data used in this analysis:
+- Dataset 1: [[file:YYYY-MM-DD.org::*Entry]] or [[file:./data/file.csv]]
+- Dataset 2: [[file:YYYY-MM-DD.org::*Entry]]
+- Literature data: Reference
+
+** Data Preprocessing
+Describe any cleaning, filtering, or transformation of raw data.
+
+#+BEGIN_SRC python :session analysis :exports both
+import pandas as pd
+import numpy as np
+
+# Load and clean data
+data = pd.read_csv('data/YYYY-MM-DD/raw_data.csv')
+
+# Preprocessing steps
+# 1. Remove outliers
+# 2. Normalize
+# 3. ...
+
+print(f"Original data points: {len(data)}")
+print(f"After cleaning: {len(data_clean)}")
+#+END_SRC
+
+#+RESULTS:
+
+** Analysis Methods
+*** Statistical Methods
+Describe statistical approaches used:
+- Mean, standard deviation
+- Linear regression
+- ANOVA
+- etc.
+
+*** Computational Methods
+Describe algorithms or computational approaches:
+
+#+BEGIN_SRC python :session analysis :exports both
+from scipy.stats import linregress
+from sklearn.linear_model import LinearRegression
+
+# Analysis code
+result = linregress(x, y)
+print(f"Slope: {result.slope:.3f} ± {result.stderr:.3f}")
+print(f"R²: {result.rvalue**2:.3f}")
+print(f"p-value: {result.pvalue:.2e}")
+#+END_SRC
+
+#+RESULTS:
+
+** Results
+*** Summary Statistics
+| Variable | Mean  | Std Dev | Min   | Max   | N   |
+|----------+-------+---------+-------+-------+-----|
+| Energy   | -1.23 | 0.15    | -1.45 | -0.98 | 24  |
+| Distance | 2.05  | 0.08    | 1.95  | 2.18  | 24  |
+
+*** Visualizations
+#+BEGIN_SRC python :session analysis :results file
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+# Plot 1: Scatter with regression
+axes[0].scatter(x, y, alpha=0.6)
+axes[0].plot(x, y_fit, 'r-', label=f'Fit: y = {slope:.2f}x + {intercept:.2f}')
+axes[0].set_xlabel('X variable')
+axes[0].set_ylabel('Y variable')
+axes[0].legend()
+
+# Plot 2: Distribution
+axes[1].hist(data['energy'], bins=20, alpha=0.7, edgecolor='black')
+axes[1].set_xlabel('Energy (eV)')
+axes[1].set_ylabel('Count')
+
+plt.tight_layout()
+plt.savefig('data/YYYY-MM-DD/analysis_plots.png', dpi=300)
+return 'data/YYYY-MM-DD/analysis_plots.png'
+#+END_SRC
+
+#+RESULTS:
+[[file:data/YYYY-MM-DD/analysis_plots.png]]
+
+#+CAPTION: Analysis results: (left) correlation plot, (right) distribution
+#+NAME: fig:analysis
+[[file:data/YYYY-MM-DD/analysis_plots.png]]
+
+*** Key Findings
+1. Finding 1: Description and significance
+2. Finding 2: Description and significance
+3. Finding 3: Description and significance
+
+** Interpretation
+*** What the Results Mean
+Explain the significance of findings:
+
+*** Comparison with Expectations
+How do results compare with hypothesis or literature?
+
+| This Analysis | Expected | Reference    | Interpretation      |
+|---------------+----------+--------------+---------------------|
+| Value 1       | Value 2  | Smith (2024) | Agreement / Differs |
+
+*** Correlations and Trends
+Describe any patterns observed:
+- Correlation between X and Y: r = 0.85, p < 0.001
+- Trend over time:
+- Group differences:
+
+*** Limitations
+- Limitation 1 and its impact
+- Limitation 2 and its impact
+- Sample size considerations
+- Assumptions made
+
+** Conclusions
+- Main conclusion 1
+- Main conclusion 2
+
+Confidence: High / Medium / Low
+Based on: statistical significance, sample size, agreement with literature
+
+** Implications
+*** For Current Work
+How do these results affect ongoing projects?
+
+*** For Future Work
+What new questions does this raise?
+
+** Statistical Details
+*** Tests Performed
+| Test         | Variables | Result    | p-value | Interpretation |
+|--------------+-----------+-----------+---------+----------------|
+| t-test       | A vs B    | t = 2.34  | 0.023   | Significant    |
+| ANOVA        | A,B,C,D   | F = 5.67  | 0.003   | Significant    |
+| Correlation  | X vs Y    | r = 0.85  | < 0.001 | Strong         |
+
+*** Model Parameters
+If using fitted models:
+
+| Parameter | Value    | Std Error | 95% CI          |
+|-----------+----------+-----------+-----------------|
+| Slope     | 0.45     | 0.03      | [0.39, 0.51]    |
+| Intercept | -1.23    | 0.12      | [-1.47, -0.99]  |
+| R²        | 0.72     | -         | -               |
+
+** Code and Data Availability
+*** Analysis Code
+Full analysis code: [[file:./data/YYYY-MM-DD/analysis.py]]
+
+#+BEGIN_SRC python :tangle data/YYYY-MM-DD/analysis.py
+#!/usr/bin/env python3
+"""
+Analysis script for [description]
+Date: YYYY-MM-DD
+Author: Your Name
+"""
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Full reproducible analysis code
+# ...
+#+END_SRC
+
+*** Data Files
+- Input data: [[file:./data/YYYY-MM-DD/input_data.csv]]
+- Processed data: [[file:./data/YYYY-MM-DD/processed_data.csv]]
+- Results: [[file:./data/YYYY-MM-DD/analysis_results.csv]]
+
+** Next Steps
+- [ ] Validate findings with independent dataset
+- [ ] Perform sensitivity analysis
+- [ ] Share results with collaborators
+- [ ] Include in manuscript
+
+** References
+- Related analysis: [[file:YYYY-MM-DD.org::*Previous Analysis]]
+- Methods reference: Paper by Author (Year)
+- Data source: [[file:YYYY-MM-DD.org::*Experiment]]

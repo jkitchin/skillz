@@ -1,0 +1,234 @@
+* [HH:MM] Literature Review - Paper Title/Topic
+:PROPERTIES:
+:ID: YYYY-MM-DD-NNN
+:TYPE: Literature
+:TOPIC: Subject_Area
+:KEYWORDS: keyword1, keyword2, keyword3
+:RATING: ★★★★★ (5=essential, 1=tangential)
+:END:
+
+** Citation
+*Full Citation:*
+Author, A., Author, B., & Author, C. (Year). Title of paper.
+/Journal Name/, Volume(Issue), pages.
+DOI: https://doi.org/10.xxxx/xxxxx
+
+*BibTeX:*
+#+BEGIN_EXAMPLE
+@article{AuthorYear,
+  author = {Author, A. and Author, B.},
+  title = {Title of Paper},
+  journal = {Journal Name},
+  year = {Year},
+  volume = {XX},
+  pages = {XXX--XXX},
+  doi = {10.xxxx/xxxxx}
+}
+#+END_EXAMPLE
+
+** Quick Summary
+One-paragraph summary of the paper's main contribution and findings.
+
+** Why I Read This Paper
+- Recommended by: Person / Found via: search/reference
+- Relevance to my work:
+- Specific question it addresses:
+
+** Background and Context
+*** Problem Statement
+What problem does this paper address?
+
+*** Previous Work
+Brief summary of relevant previous research cited.
+
+*** Gap in Knowledge
+What was missing before this work?
+
+** Methods
+*** Experimental/Computational Approach
+Summary of the methodology:
+- Technique 1:
+- Technique 2:
+
+*** Key Parameters/Conditions
+| Parameter       | Value            | Notes           |
+|-----------------+------------------+-----------------|
+| Temperature     | 300 K            | Room temp       |
+| System studied  | Pt(111) + CO     | Model catalyst  |
+| Method          | DFT-PBE          | Theory          |
+
+*** Novel Aspects
+What's new or different about their approach?
+
+** Results
+*** Main Findings
+1. Finding 1: Description
+   - Supporting data:
+   - Significance:
+
+2. Finding 2: Description
+   - Supporting data:
+   - Significance:
+
+3. Finding 3: Description
+
+*** Key Figures/Tables
+*Figure 1:* Brief description
+- What it shows:
+- Why it's important:
+
+*Table X:* Brief description
+- Data of interest for my work:
+
+*** Quantitative Results Relevant to My Work
+| Observable          | Value    | Conditions        | Our Target |
+|---------------------+----------+-------------------+------------|
+| Adsorption energy   | -1.6 eV  | Pt(111), PBE      | -1.8 eV    |
+| Activation barrier  | 0.8 eV   | CO oxidation      | TBD        |
+
+** Discussion/Analysis
+*** Authors' Interpretation
+How do the authors explain their results?
+
+*** Mechanisms/Models Proposed
+Description of any models or mechanisms:
+
+*** Comparison with Literature
+How do their results compare with others?
+
+| This Paper | Previous Work | Agreement? |
+|------------+---------------+------------|
+| Value 1    | Value 2       | Yes/No     |
+
+** Strengths
+- Strength 1: Why this is a strength
+- Strength 2: Why this is valuable
+- Strength 3:
+
+** Weaknesses/Limitations
+- Limitation 1: What's missing or problematic
+- Limitation 2: Potential issues
+- Limitation 3:
+
+## Relevance to My Work
+*** Direct Applications
+How can I use these results?
+- Application 1:
+- Application 2:
+
+*** Comparison Points
+What can I compare with my results?
+- Validation target 1: Their value X for system Y
+- Validation target 2:
+
+*** Methodological Insights
+Techniques or approaches to adopt:
+- Method 1: Why useful
+- Parameter choice: Justification
+
+### Questions This Paper Raises
+- [ ] Question 1 - Could test with calculation
+- [ ] Question 2 - Follow-up in literature
+- [ ] Question 3 - Ask collaborator
+
+** Contradictions or Controversies
+*** Disagreement with Other Work
+Does this paper contradict other findings?
+- Paper by Author B found X
+- This paper finds Y
+- Possible reasons:
+
+*** Open Questions
+What remains unresolved?
+
+** Future Directions
+*** What the Authors Suggest
+Future work mentioned in paper:
+-
+
+*** What I Think Should Be Done
+Based on reading:
+-
+
+** Related Papers to Read
+*** Cited in This Paper
+- [ ] Important Reference 1: Author (Year)
+      Why: Key background
+- [ ] Important Reference 2: Author (Year)
+      Why: Conflicting result to investigate
+
+*** Citing This Paper
+Search for newer papers citing this work:
+- [ ] Recent paper 1 (Year)
+- [ ] Recent paper 2 (Year)
+
+** Notes for My Research
+*** Ideas Generated
+- Idea 1: Could we try approach X?
+- Idea 2: This suggests testing Y
+- Idea 3:
+
+*** Connections to Current Work
+Link to relevant notebook entries:
+- My work on similar system: [[file:YYYY-MM-DD.org::*Entry]]
+- Related calculation: [[file:YYYY-MM-DD.org::*Entry]]
+
+*** Parameters/Values to Use
+Values from this paper to use in my work:
+- Parameter 1: Value (use because:)
+- Parameter 2: Value (use because:)
+
+** For Writing/Citations
+*** Key Sentences to Quote
+Important statements that might be useful:
+#+BEGIN_QUOTE
+"Exact quote from paper with page number (p. XX)."
+#+END_QUOTE
+
+*** Figures to Reference
+- Figure 3: Shows trend we observe
+- Table 2: Comparison values we need
+
+** Paper Classification
+*** Research Type
+- [ ] Experimental
+- [ ] Computational/Theoretical
+- [ ] Combined Experiment/Theory
+- [ ] Review Paper
+- [ ] Methodology Paper
+
+*** Relevance Category
+- [ ] Core to my thesis
+- [ ] Directly related
+- [ ] Background/Context
+- [ ] Methodology reference
+- [ ] Comparison/Validation
+
+** Follow-Up Actions
+- [ ] Discuss with advisor in next meeting
+- [ ] Download supplementary materials
+- [ ] Contact authors for data/code
+- [ ] Cite in my manuscript (section X)
+- [ ] Try their method on my system
+
+** Personal Rating and Notes
+*Overall Assessment:* ★★★★★
+
+*Clarity:* Good / Fair / Poor
+
+*Relevance:* High / Medium / Low
+
+*Impact on my work:*
+This paper [describes impact on your research direction or methodology]
+
+*Will cite in:*
+- Manuscript section X
+- Background of calculation notes
+
+** Date Read
+First read: [YYYY-MM-DD]
+Reread: [YYYY-MM-DD] (if applicable)
+
+** Keywords/Tags for Searching
+Tags that will help find this later:
+:catalyst:CO:Pt:DFT:adsorption:mechanism:

@@ -1,0 +1,152 @@
+* [HH:MM] Meeting - Topic/Purpose
+<YYYY-MM-DD Day HH:MM-HH:MM>
+:PROPERTIES:
+:ID: YYYY-MM-DD-NNN
+:TYPE: Meeting
+:ATTENDEES: Person1, Person2, Person3
+:LOCATION: Room XXX / Online (Zoom/Teams)
+:END:
+
+** Pre-Meeting Notes
+Preparation done before the meeting:
+- Reviewed: [[file:YYYY-MM-DD.org::*Previous Meeting]]
+- Prepared: Presentation/slides/data
+- Questions to ask:
+  1. Question 1
+  2. Question 2
+
+** Agenda
+1. Topic 1 (10 min)
+2. Topic 2 (15 min)
+3. Discussion (20 min)
+4. Next steps (5 min)
+
+** Attendees
+| Name         | Role              | Institution/Group |
+|--------------+-------------------+-------------------|
+| Your Name    | PhD Student       | Group Name        |
+| Person 2     | Advisor           | Group Name        |
+| Person 3     | Collaborator      | External          |
+
+** Discussion Notes
+*** Topic 1: [Title]
+*Presenter:* Name
+
+*Key Points:*
+- Point 1
+- Point 2
+- Point 3
+
+*Discussion:*
+- Question/comment from Person A
+- Response:
+- Follow-up from Person B:
+
+*** Topic 2: [Title]
+*Presenter:* Name
+
+*Key Points:*
+- Point 1
+- Point 2
+
+*My Presentation:*
+Presented results on [topic]:
+- Result 1
+- Result 2
+
+#+CAPTION: Slide/figure shown in meeting
+[[file:./presentations/YYYY-MM-DD/figure.png]]
+
+*** Open Discussion
+Topics that came up:
+- Topic A: Discussion summary
+- Topic B: Discussion summary
+
+** Feedback Received
+*** On My Work
+*From Advisor:*
+- Positive feedback on [aspect]
+- Suggestion to improve [aspect]
+- Need to address [concern]
+
+*From Collaborator:*
+- Comment 1
+- Suggestion 2
+
+** Decisions Made
+1. Decision 1: Description and reasoning
+   - Impact:
+   - Timeline:
+
+2. Decision 2: Description
+   - Responsible: Name
+   - Deadline: [YYYY-MM-DD]
+
+** Action Items
+*** My Action Items
+- [ ] Task 1 - Description
+      DEADLINE: <YYYY-MM-DD Day>
+      :PROPERTIES:
+      :EFFORT: Xh
+      :END:
+
+- [ ] Task 2 - Description
+      DEADLINE: <YYYY-MM-DD Day>
+
+*** Others' Action Items
+- [ ] Person A: Task description
+- [ ] Person B: Task description
+
+** Resources Shared
+- Paper: [[file:papers/author_year.pdf][Author et al. Year]]
+- Data: [[file:~/shared/data/dataset.csv]]
+- Link: [[https://url][Description]]
+- Contact: person@institution.edu
+
+** Important Information
+*Deadlines mentioned:*
+- Deadline 1: [YYYY-MM-DD] - Description
+- Deadline 2: [YYYY-MM-DD] - Description
+
+*Upcoming Events:*
+- Event 1: [YYYY-MM-DD]
+- Conference: [YYYY-MM-DD] - [YYYY-MM-DD]
+
+** Questions to Follow Up On
+- [ ] Question 1 - Ask Person A
+- [ ] Question 2 - Look up in literature
+- [ ] Question 3 - Run calculation to test
+
+** Next Meeting
+*** Scheduled
+<YYYY-MM-DD Day HH:MM-HH:MM>
+
+*** Agenda Items for Next Time
+- Item 1
+- Item 2
+- Review progress on action items
+
+** Post-Meeting Reflections
+*What went well:*
+-
+
+*What to improve:*
+-
+
+*Key takeaways:*
+1.
+2.
+3.
+
+** Follow-Up Communications
+*** Email Sent
+Date: [YYYY-MM-DD]
+To: Person A, Person B
+Subject: Meeting summary and action items
+- Summarized decisions
+- Listed action items
+- Shared updated timeline
+
+*** Responses Received
+From Person A: [Brief summary]
+From Person B: [Brief summary]

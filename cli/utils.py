@@ -1,0 +1,139 @@
+"""Utility functions for claude-skills."""
+
+import re
+import shutil
+from pathlib import Path
+from typing import List, Optional
+
+from rich.console import Console
+
+console = Console()
+
+
+def validate_name(name: str, max_length: int = 64) -> bool:
+    """
+    Validate a skill or command name.
+
+    Names must be lowercase, with numbers and hyphens only, max 64 chars.
+    """
+    pattern = r"^[a-z0-9-]+$"
+    return bool(re.match(pattern, name) and len(name) <= max_length)
+
+
+def validate_description(description: str, max_length: int = 1024) -> bool:
+    """Validate a description length."""
+    return len(description) <= max_length
+
+
+def copy_directory(src: Path, dst: Path, force: bool = False) -> bool:
+    """
+    Copy a directory from src to dst.
+
+    Args:
+        src: Source directory
+        dst: Destination directory
+        force: If True, overwrite existing files
+
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        if dst.exists() and not force:
+            console.print(f"[yellow]Warning: {dst} already exists[/yellow]")
+            return False
+
+        if dst.exists():
+            shutil.rmtree(dst)
+
+        shutil.copytree(src, dst)
+        return True
+    except Exception as e:
+        console.print(f"[red]Error copying directory: {e}[/red]")
+        return False
+
+
+def copy_file(src: Path, dst: Path, force: bool = False) -> bool:
+    """
+    Copy a file from src to dst.
+
+    Args:
+        src: Source file
+        dst: Destination file
+        force: If True, overwrite existing file
+
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        if dst.exists() and not force:
+            console.print(f"[yellow]Warning: {dst} already exists[/yellow]")
+            return False
+
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+        return True
+    except Exception as e:
+        console.print(f"[red]Error copying file: {e}[/red]")
+        return False
+
+
+def find_skill_directories(base_path: Path) -> List[Path]:
+    """
+    Find all skill directories (containing SKILL.md) in a base path.
+
+    Args:
+        base_path: Base directory to search
+
+    Returns:
+        List of paths to skill directories
+    """
+    skills = []
+    if not base_path.exists():
+        return skills
+
+    for item in base_path.rglob("SKILL.md"):
+        skills.append(item.parent)
+
+    return sorted(skills)
+
+
+def find_command_files(base_path: Path) -> List[Path]:
+    """
+    Find all command files (*.md) in a base path.
+
+    Args:
+        base_path: Base directory to search
+
+    Returns:
+        List of paths to command files
+    """
+    commands = []
+    if not base_path.exists():
+        return commands
+
+    for item in base_path.rglob("*.md"):
+        # Skip SKILL.md files
+        if item.name != "SKILL.md":
+            commands.append(item)
+
+    return sorted(commands)
+
+
+def confirm_action(message: str, default: bool = False) -> bool:
+    """
+    Ask user for confirmation.
+
+    Args:
+        message: Message to display
+        default: Default response if user just presses enter
+
+    Returns:
+        True if user confirms, False otherwise
+    """
+    suffix = " [Y/n]: " if default else " [y/N]: "
+    response = input(message + suffix).lower().strip()
+
+    if not response:
+        return default
+
+    return response in ("y", "yes")
