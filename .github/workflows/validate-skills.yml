@@ -1,0 +1,70 @@
+name: Validate Skills
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'skills/**'
+      - 'commands/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'skills/**'
+      - 'commands/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+
+    - name: Validate all skills
+      run: |
+        for skill_dir in skills/*/*/; do
+          if [ -f "$skill_dir/SKILL.md" ]; then
+            echo "Validating $skill_dir"
+            python -c "
+        from pathlib import Path
+        from cli.validator import SkillValidator
+        skill_path = Path('$skill_dir')
+        is_valid, errors = SkillValidator.validate_skill_directory(skill_path)
+        if not is_valid:
+            print(f'Validation failed for {skill_path}:')
+            for error in errors:
+                print(f'  - {error}')
+            exit(1)
+        print(f'✓ {skill_path.name} is valid')
+            "
+          fi
+        done
+
+    - name: Validate all commands
+      run: |
+        for cmd_file in commands/**/*.md; do
+          if [ -f "$cmd_file" ]; then
+            echo "Validating $cmd_file"
+            python -c "
+        from pathlib import Path
+        from cli.validator import CommandValidator
+        cmd_path = Path('$cmd_file')
+        is_valid, errors = CommandValidator.validate_command_file(cmd_path)
+        if not is_valid:
+            print(f'Validation failed for {cmd_path}:')
+            for error in errors:
+                print(f'  - {error}')
+            exit(1)
+        print(f'✓ {cmd_path.name} is valid')
+            "
+          fi
+        done
