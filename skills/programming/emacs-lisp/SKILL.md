@@ -11,7 +11,13 @@ description: |
 
   Emphasizes: lexical binding, proper naming, documentation standards, autoloading,
   and community conventions.
-allowed-tools: Read, Edit, Write, Bash, Grep, Glob
+allowed-tools:
+  - Read
+  - Edit
+  - Write
+  - Bash
+  - Grep
+  - Glob
 ---
 
 # Emacs Lisp Style Guide Skill
