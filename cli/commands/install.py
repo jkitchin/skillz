@@ -1,5 +1,6 @@
 """Install command for claude-skills."""
 
+import os
 from pathlib import Path
 
 import click
@@ -52,11 +53,13 @@ def install(ctx, name, target, platform, item_type, force, dry_run, install_all)
     # Get repository path
     repo_path = config.get_repository_path()
     if not repo_path or not repo_path.exists():
-        console.print(
-            "[red]Error: Repository path not configured or does not exist.[/red]"
-        )
-        console.print("Run: claude-skills config set repository <path>")
-        raise click.Abort()
+        repo_path = _setup_default_config(config)
+        if not repo_path:
+            console.print(
+                "[red]Error: Repository path not configured or does not exist.[/red]"
+            )
+            console.print("Run: claude-skills config set repository <path>")
+            raise click.Abort()
 
     # Handle --all flag
     if install_all:
@@ -274,3 +277,45 @@ def _discover_all_commands(repo_path: Path) -> list:
         return []
 
     return list(find_command_files(commands_dir))
+
+
+def _setup_default_config(config: Config) -> Path:
+    """
+    Detect and setup default config if in a valid repository.
+
+    Returns the repository path if setup was successful, None otherwise.
+    """
+    cwd = Path.cwd()
+
+    # Check if current directory is a valid repo
+    if _is_valid_repo(cwd):
+        console.print(
+            f"[yellow]Repository path not configured.[/yellow]"
+        )
+        console.print(f"Detected repository: {cwd}")
+
+        # Prompt user for confirmation
+        if confirm_action("Use this directory as the repository?", default=True):
+            config.set_repository_path(cwd)
+            console.print(f"[green]Repository path set to: {cwd}[/green]")
+            return cwd
+
+    # Check parent directory as fallback
+    parent = cwd.parent
+    if parent != cwd and _is_valid_repo(parent):
+        console.print(
+            f"[yellow]Repository path not configured.[/yellow]"
+        )
+        console.print(f"Detected repository: {parent}")
+
+        if confirm_action("Use this directory as the repository?", default=True):
+            config.set_repository_path(parent)
+            console.print(f"[green]Repository path set to: {parent}[/green]")
+            return parent
+
+    return None
+
+
+def _is_valid_repo(path: Path) -> bool:
+    """Check if a directory is a valid claude-skills repository."""
+    return (path / "skills").exists() and (path / "commands").exists()

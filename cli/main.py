@@ -3,7 +3,7 @@
 import click
 from rich.console import Console
 
-from cli.commands import create, info, install, search, uninstall, update
+from cli.commands import config, create, info, install, search, uninstall, update
 from cli.commands.list import list_skills
 
 console = Console()
@@ -25,6 +25,7 @@ def cli(ctx, verbose):
 
 
 # Register commands
+cli.add_command(config.config)
 cli.add_command(install.install)
 cli.add_command(uninstall.uninstall)
 cli.add_command(list_skills)
