@@ -9,6 +9,8 @@
 
 A comprehensive CLI tool for managing AI assistant skills and slash commands for OpenCode, Claude Code, and other LLM platforms.
 
+> **Note:** Currently only tested on Claude Code and OpenCode.
+
 ## Features
 
 - **Install/Uninstall**: Easily manage skills and commands
