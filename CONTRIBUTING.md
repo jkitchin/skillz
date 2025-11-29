@@ -14,8 +14,8 @@ Thank you for your interest in contributing to Claude Skills! This document prov
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/jkitchin/claude-skills.git
-cd claude-skills
+git clone https://github.com/jkitchin/skillz.git
+cd skillz
 ```
 
 2. Install in development mode with dev dependencies:
@@ -239,7 +239,7 @@ def test_feature_name(fixture):
 
 ## Getting Help
 
-- Check existing issues: https://github.com/jkitchin/claude-skills/issues
+- Check existing issues: https://github.com/jkitchin/skillz/issues
 - Ask questions in discussions
 - Review documentation: README.md and docs/
 

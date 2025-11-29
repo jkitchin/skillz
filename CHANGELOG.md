@@ -36,5 +36,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MIT License
 - Documentation (README.md, CONTRIBUTING.md)
 
-[Unreleased]: https://github.com/jkitchin/claude-skills/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/jkitchin/claude-skills/releases/tag/v0.1.0
+[Unreleased]: https://github.com/jkitchin/skillz/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/jkitchin/skillz/releases/tag/v0.1.0

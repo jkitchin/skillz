@@ -1,21 +1,31 @@
-# Example configuration file for claude-skills
-# Copy this to ~/.config/claude-skills/config.yaml and customize
+# Example configuration file for skillz
+# Copy this to ~/.config/skillz/config.yaml and customize
 
-# Directory paths
-personal_skills_dir: ~/.claude/skills
-personal_commands_dir: ~/.claude/commands
-project_skills_dir: .claude/skills
-project_commands_dir: .claude/commands
+# Default platform for installations (opencode, claude, codex, gemini)
+default_platform: opencode
 
-# Path to the claude-skills repository (for browsing and installing skills)
-# Set this to your local clone of the repository
-repository_path: /path/to/claude-skills
+# Personal installation directories (used when no --target specified)
+personal_skills_dir: ~/.config/opencode/skills
+personal_commands_dir: ~/.config/opencode/command
+
+# Project installation directories (used with --target project)
+project_skills_dir: .opencode/skills
+project_commands_dir: .opencode/command
 
 # Default installation target (personal or project)
 default_target: personal
 
+# Path to the skillz repository (for browsing and installing skills)
+# Set this to your local clone of the repository
+repository_path: /path/to/skillz
+
 # Platform-specific directories
+# Skills will be installed to the appropriate platform's directory
 platforms:
+  opencode:
+    skills_dir: ~/.config/opencode/skills
+    commands_dir: ~/.config/opencode/command
+
   claude:
     skills_dir: ~/.claude/skills
     commands_dir: ~/.claude/commands

@@ -19,8 +19,8 @@ Complete guide to installing and setting up Claude Skills CLI.
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone the repository
-git clone https://github.com/jkitchin/claude-skills.git
-cd claude-skills
+git clone https://github.com/jkitchin/skillz.git
+cd skillz
 
 # Install in editable mode with dependencies
 uv pip install -e .
@@ -33,8 +33,8 @@ uv pip install -e ".[dev]"
 
 ```bash
 # Clone the repository
-git clone https://github.com/jkitchin/claude-skills.git
-cd claude-skills
+git clone https://github.com/jkitchin/skillz.git
+cd skillz
 
 # Create a virtual environment (recommended)
 python -m venv venv
@@ -52,23 +52,23 @@ pip install -e ".[dev]"
 Once published to PyPI:
 
 ```bash
-pip install claude-skills
+pip install skillz
 # or
-uv pip install claude-skills
+uv pip install skillz
 ```
 
 ## Configuration
 
 ### 1. Configure Repository Path
 
-Set up the path to your local claude-skills repository:
+Set up the path to your local skillz repository:
 
 ```bash
 # Create config directory
-mkdir -p ~/.config/claude-skills
+mkdir -p ~/.config/skillz
 
 # Copy example config
-cp example-config.yaml ~/.config/claude-skills/config.yaml
+cp example-config.yaml ~/.config/skillz/config.yaml
 
 # Edit config file
 # Set repository_path to your local clone path
@@ -77,7 +77,7 @@ cp example-config.yaml ~/.config/claude-skills/config.yaml
 Or create the config file manually:
 
 ```yaml
-repository_path: /path/to/your/claude-skills
+repository_path: /path/to/your/skillz
 default_target: personal
 ```
 
@@ -168,7 +168,7 @@ python -m cli.main install python-ase --platform codex
 
 ### Command not found
 
-If `claude-skills` command is not found, use the full module path:
+If `skillz` command is not found, use the full module path:
 
 ```bash
 python -m cli.main [command]
@@ -190,7 +190,7 @@ If `list` shows no items, check your config:
 python -m cli.main config get repository_path
 
 # Set it if needed
-python -m cli.main config set repository_path /path/to/claude-skills
+python -m cli.main config set repository_path /path/to/skillz
 ```
 
 ### Permission errors
@@ -212,7 +212,7 @@ pip install -e .
 Make sure you're in the right directory:
 
 ```bash
-cd /path/to/claude-skills
+cd /path/to/skillz
 pip install -e .
 ```
 
@@ -223,10 +223,10 @@ pip install -e .
 python -m cli.main uninstall --all
 
 # Uninstall package
-pip uninstall claude-skills
+pip uninstall skillz
 
 # Remove config (optional)
-rm -rf ~/.config/claude-skills
+rm -rf ~/.config/skillz
 ```
 
 ## Next Steps
@@ -238,6 +238,6 @@ rm -rf ~/.config/claude-skills
 
 ## Getting Help
 
-- Check [GitHub Issues](https://github.com/jkitchin/claude-skills/issues)
+- Check [GitHub Issues](https://github.com/jkitchin/skillz/issues)
 - Read the [FAQ](#) (coming soon)
 - Contact: jkitchin@andrew.cmu.edu

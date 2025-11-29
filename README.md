@@ -1,6 +1,6 @@
-# Claude Skills
+# Skillz
 
-A comprehensive CLI tool for managing AI assistant skills and slash commands for Claude Code and other LLM platforms.
+A comprehensive CLI tool for managing AI assistant skills and slash commands for OpenCode, Claude Code, and other LLM platforms.
 
 ## Features
 
@@ -8,7 +8,7 @@ A comprehensive CLI tool for managing AI assistant skills and slash commands for
 - **Search**: Find skills by keywords and descriptions
 - **Create**: Interactive wizard for creating new skills and commands
 - **Validate**: Ensure skills and commands meet format requirements
-- **Multi-platform**: Support for Claude, Codex, and Gemini (coming soon)
+- **Multi-platform**: Support for OpenCode, Claude Code, Codex, and Gemini
 
 ## Installation
 
@@ -31,72 +31,80 @@ pip install -e .
 First, set up the path to your skills repository:
 
 ```bash
-claude-skills config set repository /path/to/claude-skills
+skillz config set repository /path/to/skillz
 ```
 
 ### List Available Skills
 
 ```bash
 # List all skills and commands
-claude-skills list
+skillz list
 
 # List only skills
-claude-skills list --type skill
+skillz list --type skill
 
 # List only from repository
-claude-skills list --source repository
+skillz list --source repository
 ```
 
 ### Install a Skill
 
 ```bash
-# Install to personal directory (~/.claude/skills/)
-claude-skills install skill-name
+# Install to OpenCode (default)
+skillz install skill-name
 
-# Install to project directory (.claude/skills/)
-claude-skills install skill-name --target project
+# Install to Claude Code
+skillz install skill-name --platform claude
+
+# Install to project directory (.opencode/skills/)
+skillz install skill-name --target project
 
 # Preview before installing
-claude-skills install skill-name --dry-run
+skillz install skill-name --dry-run
 ```
 
 ### Search for Skills
 
 ```bash
-claude-skills search python
-claude-skills search "lab notebook"
+skillz search python
+skillz search "lab notebook"
 ```
 
 ### Create a New Skill
 
 ```bash
 # Interactive mode
-claude-skills create --type skill
+skillz create --type skill
 
 # With name specified
-claude-skills create --type skill --name my-awesome-skill
+skillz create --type skill --name my-awesome-skill
 ```
 
 ### Uninstall a Skill
 
 ```bash
-claude-skills uninstall skill-name
+skillz uninstall skill-name
 ```
 
 ## Configuration
 
-Configuration is stored in `~/.config/claude-skills/config.yaml`.
+Configuration is stored in `~/.config/skillz/config.yaml`.
 
 Default configuration:
 
 ```yaml
-personal_skills_dir: ~/.claude/skills
-personal_commands_dir: ~/.claude/commands
-project_skills_dir: .claude/skills
-project_commands_dir: .claude/commands
+default_platform: opencode
+
+personal_skills_dir: ~/.config/opencode/skills
+personal_commands_dir: ~/.config/opencode/command
+project_skills_dir: .opencode/skills
+project_commands_dir: .opencode/command
 default_target: personal
 
 platforms:
+  opencode:
+    skills_dir: ~/.config/opencode/skills
+    commands_dir: ~/.config/opencode/command
   claude:
     skills_dir: ~/.claude/skills
     commands_dir: ~/.claude/commands
@@ -152,7 +160,7 @@ Use $ARGUMENTS or $1, $2, etc. for parameters.
 ## Project Structure
 
 ```
-claude-skills/
+skillz/
 ├── cli/                    # Python CLI tool
 │   ├── commands/          # CLI command implementations
 │   ├── config.py          # Configuration management
@@ -216,8 +224,8 @@ MIT License - see LICENSE file for details
 
 ## Support
 
-- Report issues: https://github.com/jkitchin/claude-skills/issues
-- Documentation: https://github.com/jkitchin/claude-skills#readme
+- Report issues: https://github.com/jkitchin/skillz/issues
+- Documentation: https://github.com/jkitchin/skillz#readme
 
 ## Roadmap
 
