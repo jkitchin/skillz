@@ -259,13 +259,20 @@ MIT License - see LICENSE file for details
 - Report issues: https://github.com/jkitchin/skillz/issues
 - Documentation: https://github.com/jkitchin/skillz#readme
 
-## Roadmap
+## Related Projects
 
-- [ ] Phase 1: Foundation (validators, templates) ✓
-- [ ] Phase 2: Core CLI commands ✓
-- [ ] Phase 3: Initial skills library
-- [ ] Phase 4: Advanced features (update, search improvements)
-- [ ] Phase 5: Community contributions, PyPI release
+### Supported Platforms
+
+Skillz manages skills and commands for these AI coding assistants:
+
+- **[OpenCode](https://github.com/sst/opencode)** - The AI coding agent built for the terminal. Open-source, provider-agnostic, with 30k+ GitHub stars.
+- **[Claude Code](https://github.com/anthropics/claude-code)** - Anthropic's agentic coding tool that lives in your terminal. Understands your codebase and helps you code faster.
+- **[Codex CLI](https://github.com/openai/codex)** - OpenAI's lightweight coding agent that runs in your terminal.
+- **Gemini** - Google's AI assistant (skills support planned).
+
+### Related Skills Projects
+
+- **[Superpowers](https://github.com/obra/superpowers)** - A complete software development workflow framework for Claude Code with composable skills for design, TDD, code review, and integration.
 
 ## Credits
 
