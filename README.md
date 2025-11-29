@@ -2,6 +2,7 @@
 
 [![Tests](https://github.com/jkitchin/skillz/actions/workflows/test.yml/badge.svg)](https://github.com/jkitchin/skillz/actions/workflows/test.yml)
 [![Lint](https://github.com/jkitchin/skillz/actions/workflows/lint.yml/badge.svg)](https://github.com/jkitchin/skillz/actions/workflows/lint.yml)
+[![codecov](https://codecov.io/gh/jkitchin/skillz/graph/badge.svg)](https://codecov.io/gh/jkitchin/skillz)
 
 A comprehensive CLI tool for managing AI assistant skills and slash commands for OpenCode, Claude Code, and other LLM platforms.
 
@@ -186,22 +187,45 @@ skillz/
 # Install with development dependencies
 uv pip install -e ".[dev]"
 
-# Run tests
-pytest
-
-# Run linting
-ruff check .
-black --check .
-
-# Format code
-black .
+# Install pre-commit hooks
+pre-commit install
 ```
+
+### Pre-commit Hooks
+
+This project uses [pre-commit](https://pre-commit.com/) to automatically run linting and formatting checks before each commit. The hooks will:
+
+- Run `ruff check --fix` to fix linting issues
+- Run `ruff format` to format code
+
+If any changes are made by the hooks, the commit will fail. Simply stage the changes and commit again.
 
 ### Running Tests
 
 ```bash
+# Run all tests
 pytest
+
+# Run with coverage report
 pytest --cov=cli --cov-report=html
+```
+
+### Linting and Formatting
+
+We use [Ruff](https://docs.astral.sh/ruff/) for both linting and formatting:
+
+```bash
+# Check for linting issues
+ruff check .
+
+# Auto-fix linting issues
+ruff check --fix .
+
+# Check formatting
+ruff format --check .
+
+# Format code
+ruff format .
 ```
 
 ## Available Skills
