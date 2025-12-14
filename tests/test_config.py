@@ -121,4 +121,4 @@ class TestConfig:
         codex_skills = config.get_skills_dir("personal", "codex")
 
         assert ".claude/skills" in str(claude_skills)
-        assert "openai/skills" in str(codex_skills)
+        assert ".codex/skills" in str(codex_skills)

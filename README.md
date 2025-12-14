@@ -121,8 +121,8 @@ platforms:
     skills_dir: ~/.claude/skills
     commands_dir: ~/.claude/commands
   codex:
-    skills_dir: ~/.config/openai/skills
-    commands_dir: ~/.config/openai/commands
+    skills_dir: ~/.codex/skills
+    commands_dir: ~/.codex/commands
   gemini:
     skills_dir: ~/.config/gemini/skills
     commands_dir: ~/.config/gemini/commands
@@ -270,7 +270,7 @@ Skillz manages skills and commands for these AI coding assistants:
 
 - **[OpenCode](https://github.com/sst/opencode)** - The AI coding agent built for the terminal. Open-source, provider-agnostic, with 30k+ GitHub stars.
 - **[Claude Code](https://github.com/anthropics/claude-code)** - Anthropic's agentic coding tool that lives in your terminal. Understands your codebase and helps you code faster.
-- **[Codex CLI](https://github.com/openai/codex)** - OpenAI's lightweight coding agent that runs in your terminal.
+- **[Codex CLI](https://github.com/openai/codex)** - OpenAI's lightweight coding agent that runs in your terminal. See [OpenAI adopts "skills"](https://simonwillison.net/2025/Dec/12/openai-skills/) for details on their skills implementation.
 - **Gemini** - Google's AI assistant.
 
 ### Related Skills Projects

@@ -25,8 +25,8 @@ class Config:
             },
             "claude": {"skills_dir": "~/.claude/skills", "commands_dir": "~/.claude/commands"},
             "codex": {
-                "skills_dir": "~/.config/openai/skills",
-                "commands_dir": "~/.config/openai/commands",
+                "skills_dir": "~/.codex/skills",
+                "commands_dir": "~/.codex/commands",
             },
             "gemini": {
                 "skills_dir": "~/.config/gemini/skills",

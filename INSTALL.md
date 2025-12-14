@@ -154,8 +154,8 @@ Configure platform-specific paths in your config file:
 ```yaml
 platforms:
   codex:
-    skills_dir: ~/.config/openai/skills
-    commands_dir: ~/.config/openai/commands
+    skills_dir: ~/.codex/skills
+    commands_dir: ~/.codex/commands
 ```
 
 Then install with platform flag:
