@@ -1,7 +1,7 @@
 ---
 name: image-generation
 description: |
-  AI-powered image generation and editing using Google Gemini and OpenAI DALL-E models.
+  AI-powered image generation and editing using Google Gemini, Google Imagen, and OpenAI models.
   Generate images from text descriptions, edit existing images, create logos/stickers,
   apply style transfers, and produce product mockups.
 
@@ -13,7 +13,10 @@ description: |
   - Style transfers or artistic effects
   - Iterative image refinement
 
-  Available models: gemini-2.5-flash-image, gemini-3-pro-image-preview, dall-e-3, dall-e-2
+  Available models:
+  - Google Gemini: gemini-2.5-flash-image (Nano Banana), gemini-3-pro-image-preview (Nano Banana Pro)
+  - Google Imagen: imagen-4.0-generate-001, imagen-4.0-ultra-generate-001, imagen-4.0-fast-generate-001
+  - OpenAI: gpt-image-1.5 (recommended), gpt-image-1, dall-e-3, dall-e-2
 
   Inspired by: https://github.com/EveryInc/every-marketplace/tree/main/plugins/compounding-engineering/skills/gemini-imagegen
 allowed-tools: ["Bash", "Read", "Write", "AskUserQuestion", "WebFetch"]
@@ -40,46 +43,113 @@ This skill should be invoked when the user asks to:
 
 ## Available Models
 
-### Google Gemini Models
+### Google Gemini Models (Nano Banana)
 
 1. **gemini-2.5-flash-image** ("Nano Banana")
-   - Resolution: 1024px
-   - Best for: Speed, high-volume operations, rapid iteration
+   - Resolution: 1K (1024px), supports 2K
+   - Aspect ratios: 1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
+   - Best for: Speed, high-volume operations, rapid iteration, image editing
    - Use when: Quick prototypes, multiple variations, time-sensitive requests
+   - Cost: ~$0.039 per image (~$30/million output tokens)
 
 2. **gemini-3-pro-image-preview** ("Nano Banana Pro")
-   - Resolution: Up to 4K
-   - Best for: Professional assets, complex instructions, high quality
+   - Resolution: 1K default, supports 2K and 4K
+   - Aspect ratios: Same as Flash
+   - Best for: Professional assets, complex instructions, highest quality
    - Use when: Final deliverables, detailed compositions, text-heavy designs
-   - Special features: Google Search grounding, multiple reference images (up to 14)
+   - Special features:
+     - Google Search grounding for real-time data visualization
+     - "Thinking" mode with interim composition refinement
+     - Up to 14 reference images (6 objects, 5 humans for character consistency)
+     - Advanced text rendering
 
-### OpenAI DALL-E Models
+### Google Imagen 4 Family (New)
 
-3. **dall-e-3**
+3. **imagen-4.0-fast-generate-001** ("Imagen 4 Fast")
+   - Resolution: Standard
+   - Best for: Rapid generation, high-volume tasks
+   - Use when: Speed is priority, budget-conscious
+   - Cost: $0.02 per image
+   - Note: Text-only input (no image editing)
+
+4. **imagen-4.0-generate-001** ("Imagen 4")
+   - Resolution: Up to 2K
+   - Best for: High-quality photorealistic images, excellent text rendering
+   - Use when: Professional quality needed, text in images
+   - Features: Significant improvements in text rendering over previous Imagen models
+
+5. **imagen-4.0-ultra-generate-001** ("Imagen 4 Ultra")
+   - Resolution: Up to 2K
+   - Best for: Highest quality, detailed visuals
+   - Use when: Maximum quality is essential (one image at a time)
+   - Limitation: Only generates one image per request
+
+### OpenAI GPT Image Models
+
+6. **gpt-image-1.5** (Recommended - December 2025)
+   - Resolution: 1024x1024, 1536x1024, 1024x1536, or auto
+   - Best for: Production-quality visuals, precise editing, character consistency
+   - Use when: Professional design, iterative workflows, text-heavy images
+   - Features:
+     - 4x faster than gpt-image-1, 20% lower cost
+     - Built-in reasoning and world knowledge
+     - Precise logo & face preservation during edits
+     - Excellent text rendering (crisp lettering, dense text)
+     - Complex structured visuals (infographics, diagrams, multi-panel)
+     - Streaming support
+   - Output formats: png, jpeg, webp (with compression control)
+   - Transparency: transparent, opaque, or auto background
+
+7. **gpt-image-1** (April 2025)
+   - Resolution: Up to 4096x4096
+   - Best for: High-resolution images, creative workflows
+   - Use when: Maximum resolution needed
+   - Cost: ~$0.02 (low), ~$0.07 (medium), ~$0.19 (high) per image
+   - Output formats: png, jpeg, webp
+   - Note: Single image per request, no inpainting
+
+### Legacy OpenAI DALL-E Models
+
+8. **dall-e-3**
    - Resolution: 1024x1024, 1024x1792, 1792x1024
-   - Best for: High quality, detailed images, creative interpretations
-   - Use when: Artistic renders, complex scenes, natural style
+   - Best for: Creative interpretations, artistic renders
+   - Use when: Natural artistic style preferred
+   - Note: Automatic prompt expansion
 
-4. **dall-e-2**
+9. **dall-e-2**
    - Resolution: 1024x1024, 512x512, 256x256
-   - Best for: Faster generation, lower cost, simple compositions
-   - Use when: Budget-conscious, simpler images, quick iterations
+   - Best for: Faster generation, lowest cost, variations
+   - Use when: Budget-conscious, simpler images
+   - Unique feature: Can generate variations of existing images
 
 ## Model Selection Logic
 
 Ask the user or use this decision tree:
 
 ```
-Need highest quality + complex composition?
-├─ Yes → gemini-3-pro-image-preview
-└─ No → Need speed/volume?
-    ├─ Yes → gemini-2.5-flash-image
-    └─ No → Prefer DALL-E style?
-        ├─ Yes → dall-e-3
-        └─ No → Budget-conscious → dall-e-2
+Need image editing or iterative refinement?
+├─ Yes → gpt-image-1.5 (best editing) or gemini-2.5-flash-image (multi-turn chat)
+└─ No → Text-to-image only
+    ├─ Need highest quality?
+    │   ├─ Text rendering critical → gpt-image-1.5 or imagen-4.0-generate-001
+    │   ├─ Maximum resolution (4K) → gemini-3-pro-image-preview
+    │   ├─ Ultra quality (single image) → imagen-4.0-ultra-generate-001
+    │   └─ Character consistency → gpt-image-1.5 or gemini-3-pro-image-preview
+    ├─ Need speed/volume?
+    │   ├─ Cheapest → imagen-4.0-fast-generate-001 ($0.02)
+    │   └─ Fast + editing → gemini-2.5-flash-image
+    └─ Balanced default → gpt-image-1.5 (recommended)
 ```
 
-If the user has specific model preference, use that. Default to `gemini-2.5-flash-image` for balanced speed/quality.
+**Quick Reference:**
+- **Best overall**: `gpt-image-1.5` - fast, affordable, great editing & text
+- **Best for text rendering**: `gpt-image-1.5` or `imagen-4.0-generate-001`
+- **Best for 4K resolution**: `gemini-3-pro-image-preview`
+- **Cheapest per image**: `imagen-4.0-fast-generate-001` ($0.02)
+- **Best for reference images**: `gemini-3-pro-image-preview` (up to 14 refs)
+- **Best for iterative editing**: `gpt-image-1.5` (face/logo preservation)
+
+If the user has specific model preference, use that.
 
 ## Capabilities
 
@@ -209,14 +279,75 @@ response2 = chat.send_message(
 )
 ```
 
-#### For DALL-E Models:
+#### For Google Imagen 4 Models:
+
+```python
+import google.generativeai as genai
+from pathlib import Path
+
+# Configure API
+genai.configure(api_key="GEMINI_API_KEY")
+
+# Imagen 4 text-to-image (no editing support)
+imagen = genai.ImageGenerationModel("imagen-4.0-generate-001")
+# Also available: imagen-4.0-fast-generate-001, imagen-4.0-ultra-generate-001
+
+result = imagen.generate_images(
+    prompt=prompt_text,
+    number_of_images=4,  # 1-4 for standard, 1 for Ultra
+    aspect_ratio="1:1",  # 1:1, 3:4, 4:3, 9:16, 16:9
+    safety_filter_level="block_only_high",
+    person_generation="allow_adult",
+)
+
+# Save images
+for i, image in enumerate(result.images):
+    image._pil_image.save(f"output_{i}.png")
+```
+
+#### For OpenAI Models (gpt-image-1.5 recommended):
 
 ```python
 from openai import OpenAI
+from pathlib import Path
+import base64
 
 client = OpenAI(api_key="OPENAI_API_KEY")
 
-# DALL-E 3 generation
+# gpt-image-1.5 generation (recommended)
+response = client.images.generate(
+    model="gpt-image-1.5",
+    prompt=prompt_text,
+    size="1024x1024",  # or "1536x1024", "1024x1536", "auto"
+    quality="high",    # "low", "medium", "high"
+    n=1,               # 1-10 images
+    output_format="png",  # "png", "jpeg", "webp"
+    background="auto",    # "transparent", "opaque", "auto"
+    moderation="auto",    # "auto" or "low" for less restrictive
+)
+
+# Response returns base64 data
+image_data = base64.b64decode(response.data[0].b64_json)
+Path("output.png").write_bytes(image_data)
+
+# gpt-image-1 generation (for max 4K resolution)
+response = client.images.generate(
+    model="gpt-image-1",
+    prompt=prompt_text,
+    size="1024x1024",
+    quality="high",
+    n=1,
+)
+
+# Image editing with gpt-image-1.5
+response = client.images.edit(
+    model="gpt-image-1.5",
+    image=open("input.png", "rb"),
+    prompt="Change the background to a beach sunset",
+    size="1024x1024",
+)
+
+# Legacy DALL-E 3 generation
 response = client.images.generate(
     model="dall-e-3",
     prompt=prompt_text,
@@ -224,30 +355,12 @@ response = client.images.generate(
     quality="standard",  # or "hd"
     n=1,
 )
-
 image_url = response.data[0].url
 
-# Download and save
+# Download URL-based response
 import requests
-from pathlib import Path
-
 image_data = requests.get(image_url).content
 Path("output.png").write_bytes(image_data)
-
-# DALL-E 2 generation
-response = client.images.generate(
-    model="dall-e-2",
-    prompt=prompt_text,
-    size="1024x1024",  # or "512x512", "256x256"
-    n=1,
-)
-
-# For variations (DALL-E 2 only)
-response = client.images.create_variation(
-    image=open("input.png", "rb"),
-    n=2,
-    size="1024x1024"
-)
 ```
 
 **Implementation approach:**
@@ -269,14 +382,15 @@ response = client.images.create_variation(
 
 If the user wants changes:
 - For Gemini: Use chat interface to maintain context
-- For DALL-E: Generate new image with updated prompt
+- For gpt-image-1.5: Use editing API for precise face/logo preservation
+- For Imagen/DALL-E: Generate new image with updated prompt
 - Keep previous versions for comparison
 - Suggest specific adjustments based on the current result
 
 ## Requirements
 
 **API Keys:**
-- Google Gemini: Set `GOOGLE_API_KEY` or `GEMINI_API_KEY` environment variable
+- Google (Gemini/Imagen): Set `GOOGLE_API_KEY` or `GEMINI_API_KEY` environment variable
 - OpenAI: Set `OPENAI_API_KEY` environment variable
 
 **Python Packages:**
@@ -288,6 +402,18 @@ pip install google-generativeai openai pillow requests
 - Python 3.8+
 - Internet connection for API access
 - Write permissions for saving images
+
+**Approximate Costs (per image):**
+| Model | Low Quality | High Quality |
+|-------|-------------|--------------|
+| imagen-4.0-fast | $0.02 | $0.02 |
+| imagen-4.0 | - | ~$0.04 |
+| imagen-4.0-ultra | - | ~$0.08 |
+| gemini-2.5-flash-image | ~$0.039 | ~$0.039 |
+| gpt-image-1.5 | ~$0.016 | ~$0.15 |
+| gpt-image-1 | ~$0.02 | ~$0.19 |
+| dall-e-3 | ~$0.04 | ~$0.08 |
+| dall-e-2 | ~$0.02 | ~$0.02 |
 
 ## Best Practices
 
@@ -318,28 +444,46 @@ pip install google-generativeai openai pillow requests
 
 ### Model-Specific Tips
 
-**Gemini Flash (2.5):**
-- Ideal for rapid iteration and exploration
+**gpt-image-1.5 (Recommended):**
+- Best for iterative editing workflows - preserves faces/logos during edits
+- Built-in reasoning understands context (e.g., "Bethel, NY, August 1969" → Woodstock)
+- Excellent text rendering, especially dense/small text
+- Great for infographics, diagrams, multi-panel compositions
+- 4x faster than gpt-image-1, use streaming for real-time feedback
+- Use `background="transparent"` for assets
+
+**gpt-image-1:**
+- Maximum resolution (4096x4096) when needed
+- Good for one-shot high-res generation
+- No editing/inpainting support
+
+**Imagen 4 Family:**
+- Best text rendering among Google models
+- Use Fast ($0.02) for high-volume prototyping
+- Use Ultra for highest quality single images
+- Text-to-image only (no editing) - use Gemini for edits
+- All images include SynthID watermark
+
+**Gemini Flash (2.5) - Nano Banana:**
+- Best for iterative multi-turn editing via chat
 - Good for generating multiple variations quickly
-- Use for draft/concept phase
+- Use for draft/concept phase with refinement
 
-**Gemini Pro (3):**
-- Use for final deliverables
-- Better at rendering text in images
+**Gemini Pro (3) - Nano Banana Pro:**
+- Use for final deliverables and 4K output
+- Best for complex compositions with reference images (up to 14)
+- "Thinking" mode generates interim drafts for composition planning
 - Leverage Google Search grounding for current events/real places
-- Provide multiple reference images for complex compositions
 
-**DALL-E 3:**
+**DALL-E 3 (Legacy):**
 - Excellent at understanding natural language
 - Strong at creative interpretations
-- Good default for artistic/illustrative styles
-- Prompt expansion happens automatically
+- Automatic prompt expansion (may deviate from exact request)
 
-**DALL-E 2:**
+**DALL-E 2 (Legacy):**
 - More literal interpretation of prompts
-- Good for controlled, predictable outputs
 - Can generate variations of existing images
-- More budget-friendly
+- Budget-friendly for simple tasks
 
 ### Quality Guidelines
 
@@ -367,19 +511,20 @@ pip install google-generativeai openai pillow requests
 **Expected behavior:**
 1. Ask user about style preference (modern, vintage, minimalist, etc.)
 2. Ask about color preferences
-3. Select model (gemini-3-pro-image-preview for vector-style quality)
+3. Select model (gpt-image-1.5 for text rendering, or gemini-3-pro-image-preview for 4K)
 4. Generate with prompt: "Coffee shop logo for 'Morning Brew', minimalist modern design,
    coffee cup with steam forming sunrise rays, warm brown and orange colors,
    clean professional aesthetic, vector style, white background"
-5. Save image and show path
-6. Offer to generate variations with different styles
+5. Use `background="transparent"` for gpt-image-1.5 for easy placement
+6. Save image and show path
+7. Offer to generate variations with different styles
 
 ### Example 2: Product Photography
 
 **User request:** "Generate product photos of wireless earbuds"
 
 **Expected behavior:**
-1. Select model (gemini-2.5-flash-image for speed, or dalle-3 for realism)
+1. Select model (imagen-4.0-generate-001 for photorealism, or gpt-image-1.5 for editing)
 2. Generate with prompt: "Wireless earbuds product photography, white background,
    professional studio lighting, 3/4 angle view showing charging case and earbuds,
    clean minimal composition, high resolution, sharp focus, e-commerce quality"
@@ -391,7 +536,7 @@ pip install google-generativeai openai pillow requests
 **User request:** "Create a cute sticker of a robot"
 
 **Expected behavior:**
-1. Select model (gemini-2.5-flash-image for illustration)
+1. Select model (gpt-image-1.5 with `background="transparent"` for stickers)
 2. Generate with prompt: "Cute robot sticker, kawaii style, bold black outlines,
    cel-shading, pastel blue and silver colors, big friendly eyes, rounded shapes,
    chibi proportions, white border, transparent background suitable for sticker"
@@ -403,7 +548,7 @@ pip install google-generativeai openai pillow requests
 
 **Expected behavior:**
 1. Use `Read` tool to load the existing image
-2. Select Gemini model (supports image input)
+2. Select model (gpt-image-1.5 for best editing with face preservation, or Gemini for chat-based iteration)
 3. Generate with image + prompt: "Change the background to a beautiful beach at sunset,
    golden hour lighting, warm colors, ocean and palm trees visible, maintain the subject
    in foreground, seamless composition"
@@ -416,7 +561,7 @@ pip install google-generativeai openai pillow requests
 **Expected behavior:**
 1. First generation: "Futuristic city skyline, towering skyscrapers, advanced architecture,
    night scene, detailed, cinematic lighting"
-2. Use Gemini chat interface to maintain context
+2. Use gpt-image-1.5 edit API or Gemini chat interface to maintain context
 3. Second refinement: "Add vibrant neon lights throughout the city, cyberpunk aesthetic,
    glowing signs and billboards"
 4. Third refinement: "Add rain effect, wet streets reflecting neon lights, atmospheric,
@@ -425,16 +570,17 @@ pip install google-generativeai openai pillow requests
 
 ## Limitations
 
-1. **Content Policies**: Both Gemini and DALL-E have content restrictions (no violence,
+1. **Content Policies**: All models have content restrictions (no violence,
    explicit content, copyrighted characters, real people without consent)
-2. **Text Rendering**: Text in images can be inconsistent; Gemini Pro performs better
-3. **Photorealism of People**: May not perfectly capture specific facial features
+2. **Text Rendering**: Much improved in gpt-image-1.5 and Imagen 4, but very long/complex text may still have issues
+3. **Photorealism of People**: May not perfectly capture specific facial features; gpt-image-1.5 preserves faces best during edits
 4. **Complex Compositions**: Very complex scenes may need multiple iterations
-5. **Consistency**: Hard to maintain exact consistency across multiple generations
-6. **Real-time Events**: Results may not reflect very recent events (use Gemini Pro Search
-   grounding for current topics)
-7. **API Costs**: Be mindful of usage; Pro models and high resolutions cost more
+5. **Consistency**: Hard to maintain exact consistency across multiple generations; use gpt-image-1.5 or Gemini Pro with reference images for character consistency
+6. **Real-time Events**: Results may not reflect very recent events (use Gemini Pro Search grounding for current topics)
+7. **API Costs**: Be mindful of usage; see pricing table above
 8. **Rate Limits**: APIs have rate limits; may need to wait between requests
+9. **Imagen Limitations**: Text-to-image only (no editing), single image for Ultra model
+10. **Watermarks**: Google Imagen images include SynthID watermark
 
 ## Related Skills
 
@@ -445,7 +591,8 @@ pip install google-generativeai openai pillow requests
 
 ## Additional Resources
 
-- **Gemini API Documentation**: https://ai.google.dev/gemini-api/docs/vision
-- **DALL-E API Documentation**: https://platform.openai.com/docs/guides/images
+- **Gemini Image Generation**: https://ai.google.dev/gemini-api/docs/image-generation
+- **Imagen API Documentation**: https://ai.google.dev/gemini-api/docs/imagen
+- **OpenAI Images API**: https://platform.openai.com/docs/api-reference/images
+- **gpt-image-1.5 Prompting Guide**: https://cookbook.openai.com/examples/multimodal/image-gen-1.5-prompting_guide
 - **Prompt Engineering Guide**: See `references/prompt-engineering.md`
-- **Model Comparison**: See `references/gemini-models.md` and `references/dalle-models.md`
