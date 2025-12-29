@@ -1,5 +1,8 @@
 # Google Gemini Image Generation Models
 
+> **Important (December 2025)**: This documentation uses the `google-genai` SDK. The `google-generativeai`
+> package has been deprecated. See [migration guide](https://ai.google.dev/gemini-api/docs/migrate).
+
 ## Overview
 
 Google's Gemini models include advanced image generation capabilities through the `generateContent` endpoint with image response modalities. These models can create images from text, edit existing images, and maintain context across multi-turn conversations.
@@ -66,43 +69,47 @@ Google's Gemini models include advanced image generation capabilities through th
 ### Basic Setup
 
 ```python
-import google.generativeai as genai
-from pathlib import Path
+from google import genai
+from google.genai import types
 
-# Configure with API key
-genai.configure(api_key="YOUR_GEMINI_API_KEY")
-
-# Initialize model
-model = genai.GenerativeModel("gemini-2.5-flash-image")
+# Initialize client (uses GEMINI_API_KEY or GOOGLE_API_KEY env var automatically)
+client = genai.Client()
 ```
 
 ### Text-to-Image Generation
 
 ```python
 # Simple generation
-response = model.generate_content(
-    "A serene mountain lake at sunset, photorealistic",
-    generation_config={
-        "response_modalities": ["TEXT", "IMAGE"]
-    }
+response = client.models.generate_content(
+    model="gemini-2.5-flash-image",
+    contents="A serene mountain lake at sunset, photorealistic",
+    config=types.GenerateContentConfig(
+        response_modalities=["TEXT", "IMAGE"]
+    )
 )
 
 # Save image
 for part in response.parts:
-    if part.inline_data:
-        Path("output.png").write_bytes(part.inline_data.data)
+    if part.text is not None:
+        print(part.text)
+    elif part.inline_data is not None:
+        image = part.as_image()
+        image.save("output.png")
 ```
 
 ### Configuration Options
 
 ```python
-response = model.generate_content(
-    prompt,
-    generation_config={
-        "response_modalities": ["TEXT", "IMAGE"],
-        "aspect_ratio": "16:9",  # Options: 1:1, 3:4, 4:3, 9:16, 16:9, 21:9
-        "image_size": "2K",      # Options: 1K, 2K, 4K (Pro only)
-    }
+response = client.models.generate_content(
+    model="gemini-2.5-flash-image",
+    contents=prompt,
+    config=types.GenerateContentConfig(
+        response_modalities=["TEXT", "IMAGE"],
+        image_config=types.ImageConfig(
+            aspect_ratio="16:9",  # Options: 1:1, 3:4, 4:3, 9:16, 16:9, 21:9
+            image_size="2K",      # Options: 1K, 2K, 4K (Pro only)
+        )
+    )
 )
 ```
 
@@ -128,48 +135,47 @@ from PIL import Image
 input_image = Image.open("photo.jpg")
 
 # Edit with text instructions
-response = model.generate_content(
-    [input_image, "Change the background to a starry night sky"],
-    generation_config={
-        "response_modalities": ["TEXT", "IMAGE"]
-    }
+response = client.models.generate_content(
+    model="gemini-2.5-flash-image",
+    contents=[input_image, "Change the background to a starry night sky"],
+    config=types.GenerateContentConfig(
+        response_modalities=["TEXT", "IMAGE"]
+    )
 )
 
 # Save edited image
 for part in response.parts:
-    if part.inline_data:
-        Path("edited.png").write_bytes(part.inline_data.data)
+    if part.inline_data is not None:
+        image = part.as_image()
+        image.save("edited.png")
 ```
 
 ### Multi-turn Refinement
 
 ```python
 # Start chat for iterative refinement
-chat = model.start_chat()
+chat = client.chats.create(
+    model="gemini-2.5-flash-image",
+    config=types.GenerateContentConfig(
+        response_modalities=["TEXT", "IMAGE"]
+    )
+)
 
 # First generation
-response1 = chat.send_message(
-    "A futuristic city skyline at night",
-    generation_config={"response_modalities": ["TEXT", "IMAGE"]}
-)
+response1 = chat.send_message("A futuristic city skyline at night")
 
 # Refinement 1
-response2 = chat.send_message(
-    "Add more neon lights and flying cars",
-    generation_config={"response_modalities": ["TEXT", "IMAGE"]}
-)
+response2 = chat.send_message("Add more neon lights and flying cars")
 
 # Refinement 2
-response3 = chat.send_message(
-    "Make the scene more cyberpunk with rain reflections",
-    generation_config={"response_modalities": ["TEXT", "IMAGE"]}
-)
+response3 = chat.send_message("Make the scene more cyberpunk with rain reflections")
 
 # Save each iteration
 for i, resp in enumerate([response1, response2, response3], 1):
     for part in resp.parts:
-        if part.inline_data:
-            Path(f"iteration_{i}.png").write_bytes(part.inline_data.data)
+        if part.inline_data is not None:
+            image = part.as_image()
+            image.save(f"iteration_{i}.png")
 ```
 
 ### Multiple Reference Images (Pro Only)
@@ -183,19 +189,19 @@ ref2 = Image.open("composition_reference.jpg")
 ref3 = Image.open("color_reference.jpg")
 
 # Generate with multiple references
-model_pro = genai.GenerativeModel("gemini-3-pro-image-preview")
-response = model_pro.generate_content(
-    [
+response = client.models.generate_content(
+    model="gemini-3-pro-image-preview",
+    contents=[
         ref1,
         ref2,
         ref3,
         "Create a portrait combining the artistic style of the first image, "
         "the composition of the second, and the color palette of the third"
     ],
-    generation_config={
-        "response_modalities": ["TEXT", "IMAGE"],
-        "image_size": "4K"
-    }
+    config=types.GenerateContentConfig(
+        response_modalities=["TEXT", "IMAGE"],
+        image_config=types.ImageConfig(image_size="4K")
+    )
 )
 ```
 
@@ -203,15 +209,14 @@ response = model_pro.generate_content(
 
 ```python
 # Use Search grounding for current events/real locations
-model_pro = genai.GenerativeModel("gemini-3-pro-image-preview")
-
-response = model_pro.generate_content(
-    "Create an aerial view visualization of Tokyo's Shibuya crossing "
-    "showing current building layouts and architecture",
-    generation_config={
-        "response_modalities": ["TEXT", "IMAGE"],
-        "use_search": True  # Enable Search grounding
-    }
+response = client.models.generate_content(
+    model="gemini-3-pro-image-preview",
+    contents="Create an aerial view visualization of Tokyo's Shibuya crossing "
+             "showing current building layouts and architecture",
+    config=types.GenerateContentConfig(
+        response_modalities=["TEXT", "IMAGE"],
+        tools=[{"google_search": {}}]  # Enable Search grounding
+    )
 )
 ```
 
@@ -318,7 +323,11 @@ vector style, clean lines, suitable for digital and print
 **Content Policy Violations:**
 ```python
 try:
-    response = model.generate_content(prompt, generation_config=config)
+    response = client.models.generate_content(
+        model="gemini-2.5-flash-image",
+        contents=prompt,
+        config=types.GenerateContentConfig(response_modalities=["TEXT", "IMAGE"])
+    )
 except Exception as e:
     if "SAFETY" in str(e):
         print("Content policy violation. Try rephrasing the prompt.")
@@ -330,9 +339,10 @@ except Exception as e:
 ```python
 has_image = False
 for part in response.parts:
-    if part.inline_data:
+    if part.inline_data is not None:
         has_image = True
-        Path("output.png").write_bytes(part.inline_data.data)
+        image = part.as_image()
+        image.save("output.png")
 
 if not has_image:
     print("No image generated. Try a more specific prompt.")
@@ -358,8 +368,10 @@ if not has_image:
 
 ## API Resources
 
-- **Official Documentation**: https://ai.google.dev/gemini-api/docs/vision
+- **SDK Migration Guide**: https://ai.google.dev/gemini-api/docs/migrate
+- **Image Generation Docs**: https://ai.google.dev/gemini-api/docs/image-generation
 - **API Reference**: https://ai.google.dev/api/generate-content
-- **Python SDK**: https://github.com/google/generative-ai-python
+- **Python SDK (new)**: https://github.com/googleapis/python-genai
+- **Deprecated SDK Info**: https://github.com/google-gemini/deprecated-generative-ai-python
 - **Pricing**: https://ai.google.dev/pricing
 - **Content Policies**: https://ai.google.dev/gemini-api/terms

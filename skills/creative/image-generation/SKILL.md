@@ -24,6 +24,10 @@ allowed-tools: ["Bash", "Read", "Write", "AskUserQuestion", "WebFetch"]
 
 # Image Generation
 
+> **Important (December 2025)**: The `google-generativeai` package has been deprecated.
+> This skill now uses the `google-genai` SDK. If upgrading from older code, see the
+> [migration guide](https://ai.google.dev/gemini-api/docs/migrate).
+
 ## Purpose
 
 This skill enables AI-powered image generation and editing through Google's Gemini image models and OpenAI's DALL-E models. Create photorealistic images, illustrations, logos, stickers, and product mockups from natural language descriptions. Edit existing images with text instructions, apply style transfers, and refine outputs through iterative conversation.
@@ -230,79 +234,82 @@ clean minimal composition, e-commerce product shot"
 
 #### For Gemini Models:
 
+> **Note**: The `google.generativeai` package has been deprecated. Use `google.genai` instead.
+> See migration guide: https://ai.google.dev/gemini-api/docs/migrate
+
 ```python
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from pathlib import Path
 
-# Configure API
-genai.configure(api_key="GEMINI_API_KEY")
-
-# Select model
-model_name = "gemini-2.5-flash-image"  # or gemini-3-pro-image-preview
-model = genai.GenerativeModel(model_name)
+# Initialize client (uses GEMINI_API_KEY or GOOGLE_API_KEY env var automatically)
+client = genai.Client()
 
 # Basic text-to-image
-response = model.generate_content(
-    prompt_text,
-    generation_config={
-        "response_modalities": ["TEXT", "IMAGE"],
+response = client.models.generate_content(
+    model="gemini-2.5-flash-image",  # or gemini-3-pro-image-preview
+    contents=prompt_text,
+    config=types.GenerateContentConfig(
+        response_modalities=["TEXT", "IMAGE"],
         # Optional configurations:
-        # "aspect_ratio": "1:1",  # 1:1, 3:4, 4:3, 9:16, 16:9, 21:9
-        # "image_size": "1K",     # 1K, 2K, 4K (Pro only)
-    }
+        # image_config=types.ImageConfig(
+        #     aspect_ratio="1:1",  # 1:1, 3:4, 4:3, 9:16, 16:9, 21:9
+        #     image_size="1K",     # 1K, 2K, 4K (Pro only)
+        # )
+    )
 )
 
 # Extract and save image
 for part in response.parts:
-    if part.inline_data:
-        image_data = part.inline_data.data
-        Path("output.png").write_bytes(image_data)
+    if part.text is not None:
+        print(part.text)
+    elif part.inline_data is not None:
+        image = part.as_image()
+        image.save("output.png")
 
 # For image editing (pass existing image):
 from PIL import Image
 
 image = Image.open("input.png")
-response = model.generate_content(
-    [image, "Make the background a sunset scene"],
-    generation_config={"response_modalities": ["TEXT", "IMAGE"]}
+response = client.models.generate_content(
+    model="gemini-2.5-flash-image",
+    contents=[image, "Make the background a sunset scene"],
+    config=types.GenerateContentConfig(response_modalities=["TEXT", "IMAGE"])
 )
 
 # For multi-turn refinement (use chat):
-chat = model.start_chat()
-response1 = chat.send_message(
-    "A futuristic city skyline",
-    generation_config={"response_modalities": ["TEXT", "IMAGE"]}
+chat = client.chats.create(
+    model="gemini-2.5-flash-image",
+    config=types.GenerateContentConfig(response_modalities=["TEXT", "IMAGE"])
 )
-response2 = chat.send_message(
-    "Add more neon lights and flying cars",
-    generation_config={"response_modalities": ["TEXT", "IMAGE"]}
-)
+response1 = chat.send_message("A futuristic city skyline")
+response2 = chat.send_message("Add more neon lights and flying cars")
 ```
 
 #### For Google Imagen 4 Models:
 
 ```python
-import google.generativeai as genai
-from pathlib import Path
+from google import genai
+from google.genai import types
 
-# Configure API
-genai.configure(api_key="GEMINI_API_KEY")
+# Initialize client (uses GEMINI_API_KEY or GOOGLE_API_KEY env var automatically)
+client = genai.Client()
 
 # Imagen 4 text-to-image (no editing support)
-imagen = genai.ImageGenerationModel("imagen-4.0-generate-001")
 # Also available: imagen-4.0-fast-generate-001, imagen-4.0-ultra-generate-001
-
-result = imagen.generate_images(
+response = client.models.generate_images(
+    model="imagen-4.0-generate-001",
     prompt=prompt_text,
-    number_of_images=4,  # 1-4 for standard, 1 for Ultra
-    aspect_ratio="1:1",  # 1:1, 3:4, 4:3, 9:16, 16:9
-    safety_filter_level="block_only_high",
-    person_generation="allow_adult",
+    config=types.GenerateImagesConfig(
+        number_of_images=4,  # 1-4 for standard, 1 for Ultra
+        aspect_ratio="1:1",  # 1:1, 3:4, 4:3, 9:16, 16:9
+        person_generation="allow_adult",  # "dont_allow", "allow_adult", "allow_all"
+    )
 )
 
 # Save images
-for i, image in enumerate(result.images):
-    image._pil_image.save(f"output_{i}.png")
+for i, generated_image in enumerate(response.generated_images):
+    generated_image.image.save(f"output_{i}.png")
 ```
 
 #### For OpenAI Models (gpt-image-1.5 recommended):
@@ -395,8 +402,11 @@ If the user wants changes:
 
 **Python Packages:**
 ```bash
-pip install google-generativeai openai pillow requests
+pip install google-genai openai pillow requests
 ```
+
+> **Note**: The `google-generativeai` package has been deprecated and will no longer receive updates.
+> Use `google-genai` instead. Migration guide: https://ai.google.dev/gemini-api/docs/migrate
 
 **System:**
 - Python 3.8+
@@ -591,8 +601,10 @@ pip install google-generativeai openai pillow requests
 
 ## Additional Resources
 
+- **Google GenAI SDK Migration Guide**: https://ai.google.dev/gemini-api/docs/migrate
 - **Gemini Image Generation**: https://ai.google.dev/gemini-api/docs/image-generation
 - **Imagen API Documentation**: https://ai.google.dev/gemini-api/docs/imagen
 - **OpenAI Images API**: https://platform.openai.com/docs/api-reference/images
 - **gpt-image-1.5 Prompting Guide**: https://cookbook.openai.com/examples/multimodal/image-gen-1.5-prompting_guide
+- **Deprecated SDK Info**: https://github.com/google-gemini/deprecated-generative-ai-python
 - **Prompt Engineering Guide**: See `references/prompt-engineering.md`

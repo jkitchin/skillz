@@ -1,6 +1,9 @@
 # Image Generation Skill
 
-AI-powered image generation and editing using Google Gemini and OpenAI DALL-E models.
+> **Important (December 2025)**: This skill now uses the `google-genai` SDK. The `google-generativeai`
+> package has been deprecated. See [migration guide](https://ai.google.dev/gemini-api/docs/migrate).
+
+AI-powered image generation and editing using Google Gemini, Imagen, and OpenAI models.
 
 ## Overview
 
@@ -31,7 +34,7 @@ export OPENAI_API_KEY="your-openai-api-key"
 
 **Python Dependencies:**
 ```bash
-pip install google-generativeai openai pillow requests
+pip install google-genai openai pillow requests
 ```
 
 ### Basic Usage
@@ -56,13 +59,21 @@ Claude will automatically:
 
 ### Google Gemini
 
-- **gemini-2.5-flash-image** - Fast, 1024px, ideal for rapid iteration
-- **gemini-3-pro-image-preview** - Up to 4K, professional quality, complex compositions
+- **gemini-2.5-flash-image** - Fast, 1024px, ideal for rapid iteration and editing
+- **gemini-3-pro-image-preview** - Up to 4K, professional quality, complex compositions, 14 reference images
 
-### OpenAI DALL-E
+### Google Imagen 4
 
-- **dall-e-3** - High quality, creative interpretations, up to 1792px
-- **dall-e-2** - Fast, cost-effective, supports image editing and variations
+- **imagen-4.0-fast-generate-001** - Cheapest ($0.02/image), rapid generation
+- **imagen-4.0-generate-001** - High-quality photorealistic, excellent text rendering
+- **imagen-4.0-ultra-generate-001** - Highest quality (single image per request)
+
+### OpenAI
+
+- **gpt-image-1.5** (Recommended) - Fast, affordable, excellent editing & text rendering
+- **gpt-image-1** - Maximum resolution (4096x4096)
+- **dall-e-3** - Creative interpretations, automatic prompt expansion
+- **dall-e-2** - Budget-friendly, supports variations
 
 ## Capabilities
 
@@ -175,29 +186,38 @@ peaceful atmosphere, professional landscape photography, 24mm wide angle, high d
 
 ## Model Selection Guide
 
+**Choose gpt-image-1.5 (Recommended) when:**
+- Need excellent text rendering
+- Iterative editing workflows (preserves faces/logos)
+- Fast turnaround with good quality
+- Balanced cost/quality
+
 **Choose Gemini Flash when:**
-- Need rapid iteration
-- Working on concepts/drafts
+- Multi-turn editing via chat
+- Rapid iteration on concepts
 - Speed is priority
-- Budget-conscious
 
 **Choose Gemini Pro when:**
-- Creating final deliverables
-- Need 2K-4K resolution
-- Complex compositions
-- Text must be legible in image
+- Need 4K resolution
+- Complex compositions with reference images
+- Real-time data visualization (Search grounding)
+
+**Choose Imagen 4 Fast when:**
+- Budget is primary concern ($0.02/image)
+- High-volume generation
+- Text-to-image only (no editing)
+
+**Choose Imagen 4/Ultra when:**
+- Photorealistic quality
+- Excellent text in images
+- No editing needed
 
 **Choose DALL-E 3 when:**
-- Want highest quality
 - Creative interpretation preferred
 - Artistic/illustrative content
-- Natural language prompts
 
-**Choose DALL-E 2 when:**
-- Need multiple variations
-- Editing existing images
-- Budget is constrained
-- Quick prototyping
+**Choose gpt-image-1 when:**
+- Maximum resolution (4096x4096) needed
 
 ## Tips for Best Results
 
@@ -290,8 +310,10 @@ This skill follows the skillz repository license. The original gemini-imagegen c
 ## Resources
 
 ### API Documentation
-- [Google Gemini Vision API](https://ai.google.dev/gemini-api/docs/vision)
-- [OpenAI DALL-E API](https://platform.openai.com/docs/guides/images)
+- [Google GenAI SDK Migration Guide](https://ai.google.dev/gemini-api/docs/migrate)
+- [Google Gemini Image Generation](https://ai.google.dev/gemini-api/docs/image-generation)
+- [Google Imagen API](https://ai.google.dev/gemini-api/docs/imagen)
+- [OpenAI Images API](https://platform.openai.com/docs/api-reference/images)
 
 ### Pricing
 - [Google AI Studio Pricing](https://ai.google.dev/pricing)
@@ -312,6 +334,17 @@ Found ways to improve this skill? Contributions welcome:
 5. Documentation enhancements
 
 ## Version History
+
+- **v1.2.0** (2025-12-29) - SDK Migration
+  - Migrated from deprecated `google-generativeai` to `google-genai` SDK
+  - Updated all code examples to new API patterns
+  - Added migration guide references
+
+- **v1.1.0** (2025-12-XX) - New Models
+  - Added Google Imagen 4 family (Fast, Standard, Ultra)
+  - Added OpenAI gpt-image-1.5 and gpt-image-1
+  - Updated model selection guidance
+  - Added pricing information
 
 - **v1.0.0** (2025-01-23) - Initial release
   - Gemini 2.5 Flash and 3 Pro support
