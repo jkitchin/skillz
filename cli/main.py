@@ -18,7 +18,7 @@ def cli(ctx, verbose):
     Skillz - Manage AI assistant skills and slash commands.
 
     A CLI tool for installing, managing, and creating skills and commands
-    for OpenCode, Claude Code, and other LLM platforms.
+    for Claude Code, OpenCode, and other LLM platforms.
     """
     ctx.ensure_object(dict)
     ctx.obj["verbose"] = verbose

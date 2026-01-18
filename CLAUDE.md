@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Skillz is a CLI tool for managing AI assistant skills and slash commands across multiple LLM platforms (OpenCode, Claude Code, Codex, Gemini). The tool allows users to discover, install, create, and manage reusable skills that extend LLM capabilities.
+Skillz is a CLI tool for managing AI assistant skills and slash commands across multiple LLM platforms (Claude Code, OpenCode, Codex, Gemini). The tool allows users to discover, install, create, and manage reusable skills that extend LLM capabilities.
 
 ## Development Commands
 
@@ -74,9 +74,9 @@ Standalone markdown files with optional YAML frontmatter (description, model, al
 ### Configuration Flow
 
 1. Config loads from `~/.config/skillz/config.yaml` or uses defaults
-2. Config provides paths for personal (default: `~/.config/opencode/`) and project (default: `.opencode/`) installations
-3. Multi-platform support via `platforms` dict in config (opencode, claude, codex, gemini)
-4. Default platform is OpenCode, but fully supports Claude Code, Codex, and Gemini
+2. Config provides paths for personal (default: `~/.claude/`) and project (default: `.claude/`) installations
+3. Multi-platform support via `platforms` dict in config (claude, opencode, codex, gemini)
+4. Default platform is Claude Code, but fully supports OpenCode, Codex, and Gemini
 
 ### Validation Logic
 

@@ -7,7 +7,7 @@
 [![codecov](https://codecov.io/gh/jkitchin/skillz/graph/badge.svg)](https://codecov.io/gh/jkitchin/skillz)
 
 
-A comprehensive CLI tool for managing AI assistant skills and slash commands for OpenCode, Claude Code, and other LLM platforms.
+A comprehensive CLI tool for managing AI assistant skills and slash commands for Claude Code, OpenCode, and other LLM platforms.
 
 > **Note:** Currently only tested on Claude Code and OpenCode. Please report issues for Codex and Gemini. With opencode you may have better performance with https://www.npmjs.com/package/opencode-skills (this is what I use).
 
@@ -62,13 +62,13 @@ skillz list --source repository
 ### Install a Skill
 
 ```bash
-# Install to OpenCode (default)
+# Install to Claude Code (default)
 skillz install skill-name
 
-# Install to Claude Code
-skillz install skill-name --platform claude
+# Install to OpenCode
+skillz install skill-name --platform opencode
 
-# Install to project directory (.opencode/skills/)
+# Install to project directory (.claude/skills/)
 skillz install skill-name --target project
 
 # Preview before installing
@@ -105,21 +105,21 @@ Configuration is stored in `~/.config/skillz/config.yaml`.
 Default configuration:
 
 ```yaml
-default_platform: opencode
+default_platform: claude
 
-personal_skills_dir: ~/.config/opencode/skills
-personal_commands_dir: ~/.config/opencode/command
-project_skills_dir: .opencode/skills
-project_commands_dir: .opencode/command
+personal_skills_dir: ~/.claude/skills
+personal_commands_dir: ~/.claude/commands
+project_skills_dir: .claude/skills
+project_commands_dir: .claude/commands
 default_target: personal
 
 platforms:
-  opencode:
-    skills_dir: ~/.config/opencode/skills
-    commands_dir: ~/.config/opencode/command
   claude:
     skills_dir: ~/.claude/skills
     commands_dir: ~/.claude/commands
+  opencode:
+    skills_dir: ~/.config/opencode/skills
+    commands_dir: ~/.config/opencode/command
   codex:
     skills_dir: ~/.codex/skills
     commands_dir: ~/.codex/commands

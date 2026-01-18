@@ -31,7 +31,7 @@ console = Console()
     "--platform",
     "-p",
     default="claude",
-    help="Target platform (claude, codex, gemini, opencode)",
+    help="Target platform (claude, opencode, codex, gemini)",
 )
 @click.option("--type", "item_type", type=click.Choice(["skill", "command"]), help="Item type")
 @click.option("--force", "-f", is_flag=True, help="Overwrite existing files")

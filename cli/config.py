@@ -11,19 +11,22 @@ class Config:
     """Configuration manager for skillz."""
 
     DEFAULT_CONFIG = {
-        "personal_skills_dir": "~/.config/opencode/skills",
-        "personal_commands_dir": "~/.config/opencode/command",
-        "project_skills_dir": ".opencode/skills",
-        "project_commands_dir": ".opencode/command",
+        "personal_skills_dir": "~/.claude/skills",
+        "personal_commands_dir": "~/.claude/commands",
+        "project_skills_dir": ".claude/skills",
+        "project_commands_dir": ".claude/commands",
         "repository_path": None,  # Path to the local clone of skills repository
         "default_target": "personal",  # personal or project
-        "default_platform": "opencode",  # Default platform: opencode, claude, codex, gemini
+        "default_platform": "claude",  # Default platform: claude, opencode, codex, gemini
         "platforms": {
+            "claude": {
+                "skills_dir": "~/.claude/skills",
+                "commands_dir": "~/.claude/commands",
+            },
             "opencode": {
                 "skills_dir": "~/.config/opencode/skills",
                 "commands_dir": "~/.config/opencode/command",
             },
-            "claude": {"skills_dir": "~/.claude/skills", "commands_dir": "~/.claude/commands"},
             "codex": {
                 "skills_dir": "~/.codex/skills",
                 "commands_dir": "~/.codex/commands",

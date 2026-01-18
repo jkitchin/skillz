@@ -16,7 +16,7 @@ console = Console()
     help="Target location to update",
 )
 @click.option(
-    "--platform", "-p", default="claude", help="Target platform (claude, codex, gemini, opencode)"
+    "--platform", "-p", default="claude", help="Target platform (claude, opencode, codex, gemini)"
 )
 @click.option("--dry-run", is_flag=True, help="Preview without making changes")
 @click.pass_context
