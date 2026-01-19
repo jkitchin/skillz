@@ -186,6 +186,148 @@ Edit `ralph-sandbox.sh` to allow specific registries:
 
 Or pre-install dependencies before running Ralph.
 
+## Monitoring & Control
+
+Ralph runs autonomously, but you maintain full visibility and control.
+
+### Real-Time Monitoring
+
+Open a second terminal to watch Ralph's progress:
+
+```bash
+# Live log stream
+tail -f ralph.log
+
+# Watch commits appear
+watch -n 5 'git log --oneline -10'
+
+# Task completion counter
+watch -n 30 'echo "Done: $(grep -c "^\- \[x\]" IMPLEMENTATION_PLAN.md) / $(grep -c "^\- \[" IMPLEMENTATION_PLAN.md)"'
+
+# Test status (if tests are running)
+watch -n 60 'npm test 2>&1 | tail -10'
+
+# Coverage progress
+watch -n 120 'cat coverage/coverage-summary.json 2>/dev/null | jq ".total.lines.pct" || echo "No coverage yet"'
+```
+
+### Stopping Ralph
+
+```bash
+# Graceful stop - Ctrl+C in Ralph's terminal
+# Waits for current operation to finish
+
+# Force stop - find and kill container
+docker ps | grep ralph
+docker kill <container-id>
+
+# Or kill all ralph containers
+docker kill $(docker ps -q --filter "name=ralph-")
+```
+
+### Redirecting Mid-Run
+
+Since all state is in files, you can guide Ralph between iterations:
+
+```bash
+# Add urgent guidance to the prompt
+cat >> RALPH_PROMPT.md << 'EOF'
+
+## URGENT (added mid-run)
+- Stop adding new features
+- Focus only on fixing failing tests
+- Do not modify src/db/client.ts
+EOF
+
+# Mark a task as blocked
+sed -i 's/- \[ \] Implement auth/- [!] BLOCKED: Implement auth - needs human review/' IMPLEMENTATION_PLAN.md
+
+# Add a note for Ralph
+cat >> IMPLEMENTATION_PLAN.md << 'EOF'
+
+## Human Notes
+- The OpenAlex API is rate-limited, use mocks for now
+- Skip the PDF extraction feature for v1
+EOF
+```
+
+### Pause/Resume Pattern
+
+Add this convention to your `RALPH_PROMPT.md`:
+
+```markdown
+## Pause Check
+At the start of each iteration, check:
+- If file `PAUSE` exists, stop gracefully and exit
+- If file `RESUME_NOTES.md` exists, read it for guidance
+```
+
+Then control Ralph with:
+
+```bash
+# Pause Ralph after current iteration
+touch PAUSE
+
+# Add instructions for when Ralph resumes
+cat > RESUME_NOTES.md << 'EOF'
+When resuming:
+1. The auth module has a bug - check src/auth/token.ts line 45
+2. Skip vector search for now, focus on FTS
+3. Run `npm run lint` before committing
+EOF
+
+# Resume by removing pause file
+rm PAUSE
+```
+
+### Checkpointing Strategy
+
+Use git branches for safe experimentation:
+
+```bash
+# Before starting Ralph
+git checkout -b ralph-run-1
+
+# After Ralph runs, if satisfied
+git checkout main
+git merge ralph-run-1
+
+# If Ralph went off track
+git checkout main
+git checkout -b ralph-run-2  # Fresh start
+
+# Cherry-pick good work from failed run
+git cherry-pick abc123 def456
+```
+
+### Progress Dashboard
+
+Create a simple status check:
+
+```bash
+# One-liner status
+echo "Tasks: $(grep -c '^\- \[x\]' IMPLEMENTATION_PLAN.md)/$(grep -c '^\- \[' IMPLEMENTATION_PLAN.md) | Commits: $(git rev-list --count HEAD) | Tests: $(npm test 2>&1 | grep -oP '\d+ passed' || echo 'N/A')"
+```
+
+Or use the helper script:
+
+```bash
+./run-example.sh status
+```
+
+### When to Intervene
+
+**Let Ralph continue if:**
+- Tests are passing
+- Commits are appearing regularly
+- Task count is increasing
+
+**Intervene if:**
+- No commits for 30+ minutes (might be stuck)
+- Same test failing repeatedly in logs
+- Ralph is modifying files outside the project
+- Error messages repeating in ralph.log
+
 ## Troubleshooting
 
 ### Ralph Gets Stuck
