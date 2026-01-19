@@ -348,6 +348,36 @@ See the `agents/` directory for available agents:
 - **test-writer**: Generates comprehensive test cases and suites
 - **doc-writer**: Creates documentation, READMEs, and API docs
 
+## Available Commands
+
+See the `commands/` directory for slash commands:
+
+### Git & Workflow
+- **/commit**: Generate commit message from staged changes
+- **/pr**: Generate PR description from branch commits
+- **/changelog**: Generate changelog entry for recent changes
+
+### Code Quality
+- **/review**: Quick code review of file or selection
+- **/explain**: Explain what code does in plain English
+- **/refactor**: Suggest refactoring improvements
+- **/fix**: Diagnose and fix a specific error
+
+### Documentation
+- **/doc**: Generate docstrings/comments for code
+- **/readme**: Generate or update README content
+- **/api**: Generate API documentation
+
+### Research
+- **/cite**: Format citation from URL or DOI
+- **/lab-entry**: Create formatted lab notebook entry
+- **/summarize**: Summarize file, PR, or conversation
+
+### Analysis
+- **/deps**: Analyze project dependencies
+- **/todo**: Extract TODOs from codebase
+- **/find-usage**: Find where function/class is used
+
 ## Contributing
 
 Contributions are welcome! Please:
