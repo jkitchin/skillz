@@ -203,6 +203,36 @@ skillz agents create my-agent --prompt "An agent that analyzes code complexity"
 
 Agents must have valid name (lowercase, hyphens, max 64 chars), description (max 1024 chars), valid model (sonnet/opus/haiku), and valid tools list.
 
+## Available Commands
+
+Slash commands for common tasks:
+
+### Git & Workflow
+- `/commit` - Generate commit message from staged changes
+- `/pr` - Generate PR description from branch commits
+- `/changelog` - Generate changelog entry
+
+### Code Quality
+- `/review <file>` - Quick code review
+- `/explain <file>` - Explain code in plain English
+- `/refactor <file>` - Suggest refactoring improvements
+- `/fix <error>` - Diagnose and fix errors
+
+### Documentation
+- `/doc <file>` - Generate docstrings/comments
+- `/readme [section]` - Generate README content
+- `/api <module>` - Generate API documentation
+
+### Research
+- `/cite <url|doi>` - Format citation
+- `/lab-entry <title>` - Create lab notebook entry
+- `/summarize <file|url>` - Summarize content
+
+### Analysis
+- `/deps` - Analyze project dependencies
+- `/todo [path]` - Extract TODOs from codebase
+- `/find-usage <name>` - Find where identifier is used
+
 ## AI-Assisted Creation
 
 All three types support AI-assisted creation using the Claude CLI:
