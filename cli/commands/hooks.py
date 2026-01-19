@@ -1,0 +1,610 @@
+"""Hooks command group for skillz."""
+
+import json
+import os
+import shutil
+from pathlib import Path
+from typing import Dict, List, Optional
+
+import click
+from rich.console import Console
+from rich.table import Table
+
+from cli.config import Config
+from cli.utils import confirm_action, copy_directory, find_hook_directories
+from cli.validator import HookValidator
+
+console = Console()
+
+
+@click.group()
+def hooks():
+    """Manage Claude Code hooks."""
+    pass
+
+
+@hooks.command("list")
+@click.option(
+    "--target",
+    "-t",
+    type=click.Choice(["personal", "project", "repo"]),
+    default="personal",
+    help="Which hooks to list",
+)
+@click.option(
+    "--platform",
+    "-p",
+    default="claude",
+    help="Target platform (claude, opencode, codex, gemini)",
+)
+@click.pass_context
+def list_hooks(ctx, target, platform):
+    """List installed hooks or available hooks in repository."""
+    config = Config()
+
+    if target == "repo":
+        # List hooks from repository
+        repo_path = config.get_repository_path()
+        if not repo_path or not repo_path.exists():
+            console.print("[red]Error: Repository path not configured.[/red]")
+            console.print("Run: skillz config set repository <path>")
+            return
+
+        hooks_dir = repo_path / "hooks"
+        if not hooks_dir.exists():
+            console.print("[yellow]No hooks directory in repository[/yellow]")
+            return
+
+        hook_dirs = find_hook_directories(hooks_dir)
+    else:
+        # List installed hooks
+        hooks_dir = config.get_hooks_dir(target, platform)
+        if not hooks_dir.exists():
+            console.print(f"[yellow]No hooks installed ({hooks_dir})[/yellow]")
+            return
+
+        hook_dirs = find_hook_directories(hooks_dir)
+
+    if not hook_dirs:
+        console.print("[yellow]No hooks found[/yellow]")
+        return
+
+    # Create table
+    table = Table(title=f"Hooks ({target})")
+    table.add_column("Name", style="cyan")
+    table.add_column("Event", style="green")
+    table.add_column("Matcher", style="yellow")
+    table.add_column("Description", style="white")
+
+    for hook_path in hook_dirs:
+        metadata = HookValidator.get_hook_metadata(hook_path)
+        if metadata:
+            table.add_row(
+                metadata.get("name", hook_path.name),
+                metadata.get("event", "-"),
+                metadata.get("matcher", "*"),
+                _truncate(metadata.get("description", ""), 40),
+            )
+        else:
+            table.add_row(hook_path.name, "-", "-", "[dim]Invalid hook[/dim]")
+
+    console.print(table)
+
+
+@hooks.command()
+@click.argument("name")
+@click.option(
+    "--target",
+    "-t",
+    type=click.Choice(["personal", "project"]),
+    default="personal",
+    help="Installation target",
+)
+@click.option(
+    "--platform",
+    "-p",
+    default="claude",
+    help="Target platform (claude, opencode, codex, gemini)",
+)
+@click.option("--force", "-f", is_flag=True, help="Overwrite existing hook")
+@click.option("--dry-run", is_flag=True, help="Preview without making changes")
+@click.pass_context
+def install(ctx, name, target, platform, force, dry_run):
+    """Install a hook from the repository."""
+    config = Config()
+    verbose = ctx.obj.get("verbose", False) if ctx.obj else False
+
+    # Get repository path
+    repo_path = config.get_repository_path()
+    if not repo_path or not repo_path.exists():
+        console.print("[red]Error: Repository path not configured.[/red]")
+        console.print("Run: skillz config set repository <path>")
+        raise click.Abort()
+
+    # Find hook in repository
+    source_path = _find_hook(repo_path, name)
+    if not source_path:
+        console.print(f"[red]Error: Hook '{name}' not found in repository[/red]")
+        raise click.Abort()
+
+    # Validate hook
+    valid, errors = HookValidator.validate_hook_directory(source_path)
+    if not valid:
+        console.print("[red]Error: Invalid hook:[/red]")
+        for error in errors:
+            console.print(f"  - {error}")
+        raise click.Abort()
+
+    # Get metadata
+    metadata = HookValidator.get_hook_metadata(source_path)
+    if not metadata:
+        console.print("[red]Error: Could not read hook metadata[/red]")
+        raise click.Abort()
+
+    # Get destination
+    dest_dir = config.get_hooks_dir(target, platform)
+    dest_path = dest_dir / name
+
+    if verbose:
+        console.print(f"Source: {source_path}")
+        console.print(f"Destination: {dest_path}")
+
+    # Check if already exists
+    if dest_path.exists() and not force:
+        if not confirm_action(f"Hook '{name}' already exists. Overwrite?", default=False):
+            console.print("[yellow]Installation cancelled[/yellow]")
+            return
+
+    # Dry run
+    if dry_run:
+        console.print(f"[blue]Would install hook '{name}' to {dest_path}[/blue]")
+        console.print(f"[blue]Would update settings.json with hook configuration[/blue]")
+        return
+
+    # Install hook files
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    success = copy_directory(source_path, dest_path, force=True)
+
+    if not success:
+        console.print(f"[red]Failed to install hook '{name}'[/red]")
+        raise click.Abort()
+
+    # Make scripts executable
+    for script in dest_path.glob("*.py"):
+        os.chmod(script, 0o755)
+    for script in dest_path.glob("*.sh"):
+        os.chmod(script, 0o755)
+
+    # Update settings.json
+    settings_file = config.get_settings_file(target, platform)
+    _add_hook_to_settings(settings_file, dest_path, metadata)
+
+    console.print(f"[green]Successfully installed hook '{name}'[/green]")
+    console.print(f"[dim]Hook files: {dest_path}[/dim]")
+    console.print(f"[dim]Settings updated: {settings_file}[/dim]")
+
+
+@hooks.command()
+@click.argument("name")
+@click.option(
+    "--target",
+    "-t",
+    type=click.Choice(["personal", "project"]),
+    default="personal",
+    help="Uninstall target",
+)
+@click.option(
+    "--platform",
+    "-p",
+    default="claude",
+    help="Target platform",
+)
+@click.option("--force", "-f", is_flag=True, help="Skip confirmation")
+@click.pass_context
+def uninstall(ctx, name, target, platform, force):
+    """Uninstall a hook."""
+    config = Config()
+
+    hooks_dir = config.get_hooks_dir(target, platform)
+    hook_path = hooks_dir / name
+
+    if not hook_path.exists():
+        console.print(f"[red]Error: Hook '{name}' is not installed[/red]")
+        raise click.Abort()
+
+    # Get metadata before removal
+    metadata = HookValidator.get_hook_metadata(hook_path)
+
+    if not force:
+        if not confirm_action(f"Uninstall hook '{name}'?", default=False):
+            console.print("[yellow]Uninstall cancelled[/yellow]")
+            return
+
+    # Remove hook directory
+    try:
+        shutil.rmtree(hook_path)
+    except Exception as e:
+        console.print(f"[red]Error removing hook: {e}[/red]")
+        raise click.Abort()
+
+    # Update settings.json
+    settings_file = config.get_settings_file(target, platform)
+    if metadata:
+        _remove_hook_from_settings(settings_file, hook_path, metadata)
+
+    console.print(f"[green]Successfully uninstalled hook '{name}'[/green]")
+
+
+@hooks.command()
+@click.argument("name")
+@click.option(
+    "--target",
+    "-t",
+    type=click.Choice(["personal", "project", "repo"]),
+    default="repo",
+    help="Where to look for the hook",
+)
+@click.option("--platform", "-p", default="claude", help="Target platform")
+@click.pass_context
+def info(ctx, name, target, platform):
+    """Show detailed information about a hook."""
+    config = Config()
+
+    if target == "repo":
+        repo_path = config.get_repository_path()
+        if not repo_path:
+            console.print("[red]Error: Repository path not configured.[/red]")
+            raise click.Abort()
+        hook_path = _find_hook(repo_path, name)
+    else:
+        hooks_dir = config.get_hooks_dir(target, platform)
+        hook_path = hooks_dir / name
+
+    if not hook_path or not hook_path.exists():
+        console.print(f"[red]Error: Hook '{name}' not found[/red]")
+        raise click.Abort()
+
+    # Validate
+    valid, errors = HookValidator.validate_hook_directory(hook_path)
+    metadata = HookValidator.get_hook_metadata(hook_path)
+
+    console.print(f"\n[bold cyan]Hook: {name}[/bold cyan]")
+    console.print(f"[dim]Path: {hook_path}[/dim]\n")
+
+    if metadata:
+        console.print(f"[green]Event:[/green] {metadata.get('event', '-')}")
+        console.print(f"[green]Matcher:[/green] {metadata.get('matcher', '*')}")
+        console.print(f"[green]Type:[/green] {metadata.get('type', 'command')}")
+        console.print(f"[green]Timeout:[/green] {metadata.get('timeout', 60)}s")
+        console.print(f"\n[green]Description:[/green]\n{metadata.get('description', '-')}")
+
+    # List files
+    console.print(f"\n[green]Files:[/green]")
+    for f in sorted(hook_path.iterdir()):
+        if f.is_file():
+            console.print(f"  - {f.name}")
+
+    if not valid:
+        console.print(f"\n[red]Validation errors:[/red]")
+        for error in errors:
+            console.print(f"  - {error}")
+
+
+@hooks.command()
+@click.argument("query", required=False)
+@click.pass_context
+def search(ctx, query):
+    """Search for hooks in the repository."""
+    config = Config()
+
+    repo_path = config.get_repository_path()
+    if not repo_path or not repo_path.exists():
+        console.print("[red]Error: Repository path not configured.[/red]")
+        console.print("Run: skillz config set repository <path>")
+        raise click.Abort()
+
+    hooks_dir = repo_path / "hooks"
+    if not hooks_dir.exists():
+        console.print("[yellow]No hooks directory in repository[/yellow]")
+        return
+
+    hook_dirs = find_hook_directories(hooks_dir)
+
+    if not hook_dirs:
+        console.print("[yellow]No hooks found in repository[/yellow]")
+        return
+
+    # Filter by query if provided
+    results = []
+    for hook_path in hook_dirs:
+        metadata = HookValidator.get_hook_metadata(hook_path)
+        if metadata:
+            name = metadata.get("name", hook_path.name)
+            desc = metadata.get("description", "")
+            event = metadata.get("event", "")
+
+            if not query or _matches_query(query, name, desc, event):
+                results.append((hook_path, metadata))
+
+    if not results:
+        console.print(f"[yellow]No hooks matching '{query}'[/yellow]")
+        return
+
+    # Display results
+    table = Table(title="Search Results")
+    table.add_column("Name", style="cyan")
+    table.add_column("Event", style="green")
+    table.add_column("Description", style="white")
+
+    for hook_path, metadata in results:
+        table.add_row(
+            metadata.get("name", hook_path.name),
+            metadata.get("event", "-"),
+            _truncate(metadata.get("description", ""), 50),
+        )
+
+    console.print(table)
+
+
+@hooks.command()
+@click.argument("name")
+@click.option(
+    "--target",
+    "-t",
+    type=click.Choice(["personal", "project"]),
+    default="personal",
+    help="Where to create the hook",
+)
+@click.option("--platform", "-p", default="claude", help="Target platform")
+@click.option(
+    "--event",
+    "-e",
+    type=click.Choice(
+        [
+            "PreToolUse",
+            "PostToolUse",
+            "PermissionRequest",
+            "UserPromptSubmit",
+            "Notification",
+            "Stop",
+            "SubagentStop",
+            "PreCompact",
+            "SessionStart",
+            "SessionEnd",
+        ]
+    ),
+    default="PostToolUse",
+    help="Hook event type",
+)
+@click.pass_context
+def create(ctx, name, target, platform, event):
+    """Create a new hook from template."""
+    config = Config()
+
+    hooks_dir = config.get_hooks_dir(target, platform)
+    hook_path = hooks_dir / name
+
+    if hook_path.exists():
+        console.print(f"[red]Error: Hook '{name}' already exists at {hook_path}[/red]")
+        raise click.Abort()
+
+    # Create hook directory
+    hook_path.mkdir(parents=True, exist_ok=True)
+
+    # Create HOOK.md
+    hook_md_content = f"""---
+name: {name}
+description: Description of what this hook does
+event: {event}
+matcher: "*"
+type: command
+timeout: 60
+---
+
+# {name.replace('-', ' ').title()}
+
+## Purpose
+
+[Describe what this hook does]
+
+## Behavior
+
+[Describe the hook's behavior]
+
+## Requirements
+
+- Python 3.8+
+"""
+    (hook_path / "HOOK.md").write_text(hook_md_content)
+
+    # Create hook script
+    hook_script = f'''#!/usr/bin/env python3
+"""{name} hook for Claude Code."""
+
+import json
+import sys
+
+
+def main():
+    """Main hook entry point."""
+    # Read input from stdin
+    try:
+        input_data = json.load(sys.stdin)
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON input: {{e}}", file=sys.stderr)
+        sys.exit(1)
+
+    # Extract relevant fields
+    session_id = input_data.get("session_id", "")
+    tool_name = input_data.get("tool_name", "")
+    tool_input = input_data.get("tool_input", {{}})
+    cwd = input_data.get("cwd", "")
+
+    # Your hook logic here
+    # ...
+
+    # Exit codes:
+    # 0 = success (allow operation)
+    # 2 = block operation (for PreToolUse, etc.)
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
+'''
+    script_path = hook_path / "hook.py"
+    script_path.write_text(hook_script)
+    os.chmod(script_path, 0o755)
+
+    console.print(f"[green]Created hook '{name}' at {hook_path}[/green]")
+    console.print(f"\nFiles created:")
+    console.print(f"  - {hook_path / 'HOOK.md'}")
+    console.print(f"  - {hook_path / 'hook.py'}")
+    console.print(f"\n[dim]Edit these files, then run:[/dim]")
+    console.print(f"  skillz hooks install {name} --target {target}")
+
+
+# Helper functions
+
+
+def _find_hook(repo_path: Path, name: str) -> Optional[Path]:
+    """Find a hook by name in repository."""
+    hooks_dir = repo_path / "hooks"
+    if not hooks_dir.exists():
+        return None
+
+    for hook_path in hooks_dir.rglob("HOOK.md"):
+        if hook_path.parent.name == name:
+            return hook_path.parent
+
+    return None
+
+
+def _truncate(text: str, max_length: int) -> str:
+    """Truncate text to max length."""
+    text = text.replace("\n", " ").strip()
+    if len(text) <= max_length:
+        return text
+    return text[: max_length - 3] + "..."
+
+
+def _matches_query(query: str, *fields: str) -> bool:
+    """Check if query matches any of the fields."""
+    query_lower = query.lower()
+    for field in fields:
+        if query_lower in field.lower():
+            return True
+    return False
+
+
+def _get_hook_command(hook_path: Path) -> str:
+    """Get the command to run for a hook."""
+    # Prefer Python script, then shell script
+    py_script = hook_path / "hook.py"
+    sh_script = hook_path / "hook.sh"
+
+    if py_script.exists():
+        return str(py_script)
+    elif sh_script.exists():
+        return str(sh_script)
+    else:
+        # Look for any executable
+        for f in hook_path.iterdir():
+            if f.is_file() and f.suffix in (".py", ".sh"):
+                return str(f)
+        return str(hook_path / "hook.py")
+
+
+def _add_hook_to_settings(settings_file: Path, hook_path: Path, metadata: Dict):
+    """Add a hook to the settings.json file."""
+    settings = {}
+
+    # Load existing settings
+    if settings_file.exists():
+        try:
+            with open(settings_file) as f:
+                settings = json.load(f)
+        except (json.JSONDecodeError, Exception):
+            pass
+
+    # Ensure hooks structure exists
+    if "hooks" not in settings:
+        settings["hooks"] = {}
+
+    event = metadata.get("event", "PostToolUse")
+    matcher = metadata.get("matcher", "*")
+    hook_type = metadata.get("type", "command")
+    timeout = metadata.get("timeout", 60)
+
+    # Create hook entry
+    hook_entry = {
+        "matcher": matcher,
+        "hooks": [
+            {
+                "type": hook_type,
+                "command": _get_hook_command(hook_path),
+                "timeout": timeout,
+            }
+        ],
+    }
+
+    # Add to appropriate event
+    if event not in settings["hooks"]:
+        settings["hooks"][event] = []
+
+    # Check if hook already exists (by command path)
+    cmd_path = _get_hook_command(hook_path)
+    existing_idx = None
+    for i, entry in enumerate(settings["hooks"][event]):
+        for h in entry.get("hooks", []):
+            if h.get("command") == cmd_path:
+                existing_idx = i
+                break
+
+    if existing_idx is not None:
+        settings["hooks"][event][existing_idx] = hook_entry
+    else:
+        settings["hooks"][event].append(hook_entry)
+
+    # Save settings
+    settings_file.parent.mkdir(parents=True, exist_ok=True)
+    with open(settings_file, "w") as f:
+        json.dump(settings, f, indent=2)
+
+
+def _remove_hook_from_settings(settings_file: Path, hook_path: Path, metadata: Dict):
+    """Remove a hook from the settings.json file."""
+    if not settings_file.exists():
+        return
+
+    try:
+        with open(settings_file) as f:
+            settings = json.load(f)
+    except (json.JSONDecodeError, Exception):
+        return
+
+    if "hooks" not in settings:
+        return
+
+    event = metadata.get("event", "PostToolUse")
+    if event not in settings["hooks"]:
+        return
+
+    # Find and remove hook by command path
+    cmd_path = _get_hook_command(hook_path)
+    new_entries = []
+    for entry in settings["hooks"][event]:
+        new_hooks = [h for h in entry.get("hooks", []) if h.get("command") != cmd_path]
+        if new_hooks:
+            entry["hooks"] = new_hooks
+            new_entries.append(entry)
+
+    settings["hooks"][event] = new_entries
+
+    # Clean up empty events
+    if not settings["hooks"][event]:
+        del settings["hooks"][event]
+
+    # Save settings
+    with open(settings_file, "w") as f:
+        json.dump(settings, f, indent=2)

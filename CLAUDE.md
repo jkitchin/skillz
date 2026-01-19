@@ -67,9 +67,16 @@ Each skill is a directory containing:
 **Commands Repository (`commands/`)**
 Standalone markdown files with optional YAML frontmatter (description, model, allowed-tools, argument-hint).
 
+**Hooks Repository (`hooks/`)**
+Each hook is a directory containing:
+- `HOOK.md` - Required file with YAML frontmatter (name, description, event, matcher, type, timeout)
+- `hook.py` or `hook.sh` - The executable hook script
+- Hooks are shell commands that execute at various points in Claude Code's lifecycle
+
 **Templates (`templates/`)**
 - `SKILL_TEMPLATE.md` - Template for creating new skills
 - `COMMAND_TEMPLATE.md` - Template for creating new commands
+- `HOOK_TEMPLATE.md` - Template for creating new hooks
 
 ### Configuration Flow
 
@@ -86,11 +93,14 @@ Standalone markdown files with optional YAML frontmatter (description, model, al
 
 **Allowed Tools**: Can be `["*"]` for all tools or list from: Bash, Read, Write, Edit, Glob, Grep, Task, WebFetch, WebSearch, TodoWrite, AskUserQuestion, Skill, SlashCommand, NotebookEdit, BashOutput, KillShell.
 
+**Hooks**: Must have valid name (lowercase, hyphens, max 64 chars), description (max 256 chars), valid event (PreToolUse, PostToolUse, PermissionRequest, UserPromptSubmit, Notification, Stop, SubagentStop, PreCompact, SessionStart, SessionEnd), and at least one script file (*.py or *.sh).
+
 ### Discovery and Installation
 
-- `find_skill_directories()` and `find_command_files()` recursively scan repository
+- `find_skill_directories()`, `find_command_files()`, and `find_hook_directories()` recursively scan repository
 - Installation copies from repository to personal/project directories
 - Search uses fuzzy matching on names, descriptions, and file contents
+- Hook installation also updates `settings.json` with the hook configuration
 
 ## Key Conventions
 
@@ -108,13 +118,51 @@ The `install --all` command installs all skills and commands from the repository
 - Supports `--dry-run` to preview what would be installed
 - Respects `--target` (personal/project) and `--force` options
 
+## Hooks CLI Commands
+
+The `skillz hooks` command group manages Claude Code hooks:
+
+```bash
+# List available hooks from repository
+skillz hooks list --target repo
+
+# List installed hooks
+skillz hooks list --target personal
+
+# Install a hook
+skillz hooks install lab-notebook
+
+# Uninstall a hook
+skillz hooks uninstall lab-notebook
+
+# Get hook info
+skillz hooks info lab-notebook
+
+# Search for hooks
+skillz hooks search "format"
+
+# Create a new hook from template
+skillz hooks create my-hook --event PostToolUse
+```
+
+### Available Hooks
+
+- **lab-notebook**: Generate lab notebook entries from Claude Code sessions (SessionEnd)
+- **prettier-on-save**: Auto-format JS/TS/CSS/JSON files with Prettier (PostToolUse)
+- **black-on-save**: Auto-format Python files with Black (PostToolUse)
+- **protect-secrets**: Block writes to sensitive files like .env (PreToolUse, blocking)
+- **bash-logger**: Log all bash commands for audit (PreToolUse)
+- **notify-done**: Desktop notification when Claude needs input (Stop)
+
 ## Common Patterns
 
 **Adding a new CLI command**: Create file in `cli/commands/`, implement as Click command, import and register in `cli/main.py`.
 
-**Creating a skill**: Use `claude-skills create --type skill` or manually create directory with SKILL.md containing proper frontmatter.
+**Creating a skill**: Use `skillz create --type skill` or manually create directory with SKILL.md containing proper frontmatter.
 
-**Validation errors**: Both SkillValidator and CommandValidator return `(is_valid, list_of_errors)` tuples.
+**Creating a hook**: Use `skillz hooks create my-hook` or manually create directory with HOOK.md and hook.py.
+
+**Validation errors**: SkillValidator, CommandValidator, and HookValidator all return `(is_valid, list_of_errors)` tuples.
 
 ## Git Policy
 

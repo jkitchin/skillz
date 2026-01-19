@@ -250,3 +250,180 @@ class CommandValidator:
         """Remove frontmatter from content."""
         pattern = r"^---\s*\n.*?\n---\s*\n"
         return re.sub(pattern, "", content, count=1, flags=re.DOTALL)
+
+
+class HookValidator:
+    """Validator for hook directories and HOOK.md files."""
+
+    REQUIRED_FRONTMATTER_FIELDS = ["name", "description", "event"]
+    OPTIONAL_FRONTMATTER_FIELDS = ["matcher", "type", "timeout"]
+
+    VALID_EVENTS = {
+        "PreToolUse",
+        "PostToolUse",
+        "PermissionRequest",
+        "UserPromptSubmit",
+        "Notification",
+        "Stop",
+        "SubagentStop",
+        "PreCompact",
+        "SessionStart",
+        "SessionEnd",
+    }
+
+    VALID_HOOK_TYPES = {"command", "prompt"}
+
+    @classmethod
+    def validate_hook_directory(cls, hook_path: Path) -> Tuple[bool, List[str]]:
+        """
+        Validate a hook directory.
+
+        Args:
+            hook_path: Path to hook directory
+
+        Returns:
+            Tuple of (is_valid, list_of_errors)
+        """
+        errors = []
+
+        # Check if directory exists
+        if not hook_path.exists():
+            errors.append(f"Directory does not exist: {hook_path}")
+            return False, errors
+
+        if not hook_path.is_dir():
+            errors.append(f"Path is not a directory: {hook_path}")
+            return False, errors
+
+        # Check for HOOK.md
+        hook_file = hook_path / "HOOK.md"
+        if not hook_file.exists():
+            errors.append(f"Missing HOOK.md in {hook_path}")
+            return False, errors
+
+        # Validate HOOK.md content
+        valid, file_errors = cls.validate_hook_file(hook_file)
+        errors.extend(file_errors)
+
+        # Check for at least one script file
+        script_files = list(hook_path.glob("*.py")) + list(hook_path.glob("*.sh"))
+        if not script_files:
+            errors.append(f"No hook script (*.py or *.sh) found in {hook_path}")
+
+        return len(errors) == 0, errors
+
+    @classmethod
+    def validate_hook_file(cls, hook_file: Path) -> Tuple[bool, List[str]]:
+        """
+        Validate a HOOK.md file.
+
+        Args:
+            hook_file: Path to HOOK.md file
+
+        Returns:
+            Tuple of (is_valid, list_of_errors)
+        """
+        errors = []
+
+        try:
+            with open(hook_file) as f:
+                content = f.read()
+        except Exception as e:
+            errors.append(f"Error reading file: {e}")
+            return False, errors
+
+        # Parse frontmatter
+        frontmatter = cls._parse_frontmatter(content)
+        if frontmatter is None:
+            errors.append("Missing or invalid YAML frontmatter")
+            return False, errors
+
+        # Validate required fields
+        for field in cls.REQUIRED_FRONTMATTER_FIELDS:
+            if field not in frontmatter:
+                errors.append(f"Missing required field: {field}")
+
+        # Validate name
+        if "name" in frontmatter:
+            name = frontmatter["name"]
+            if not validate_name(name):
+                errors.append(
+                    f"Invalid name '{name}': must be lowercase with hyphens/numbers only, "
+                    f"max 64 chars"
+                )
+
+        # Validate description (shorter limit for hooks)
+        if "description" in frontmatter:
+            desc = frontmatter["description"]
+            if not validate_description(desc, max_length=256):
+                errors.append("Description too long: max 256 characters for hooks")
+
+        # Validate event
+        if "event" in frontmatter:
+            event = frontmatter["event"]
+            if event not in cls.VALID_EVENTS:
+                errors.append(
+                    f"Invalid event '{event}': must be one of {sorted(cls.VALID_EVENTS)}"
+                )
+
+        # Validate type (optional, defaults to "command")
+        if "type" in frontmatter:
+            hook_type = frontmatter["type"]
+            if hook_type not in cls.VALID_HOOK_TYPES:
+                errors.append(
+                    f"Invalid type '{hook_type}': must be one of {sorted(cls.VALID_HOOK_TYPES)}"
+                )
+
+        # Validate timeout (optional)
+        if "timeout" in frontmatter:
+            timeout = frontmatter["timeout"]
+            if not isinstance(timeout, (int, float)) or timeout <= 0:
+                errors.append("Timeout must be a positive number")
+
+        return len(errors) == 0, errors
+
+    @staticmethod
+    def _parse_frontmatter(content: str) -> Optional[Dict]:
+        """
+        Parse YAML frontmatter from markdown content.
+
+        Args:
+            content: Markdown content
+
+        Returns:
+            Dictionary of frontmatter or None if invalid
+        """
+        # Match frontmatter between --- delimiters
+        pattern = r"^---\s*\n(.*?)\n---\s*\n"
+        match = re.match(pattern, content, re.DOTALL)
+
+        if not match:
+            return None
+
+        frontmatter_str = match.group(1)
+        try:
+            return yaml.safe_load(frontmatter_str)
+        except yaml.YAMLError:
+            return None
+
+    @classmethod
+    def get_hook_metadata(cls, hook_path: Path) -> Optional[Dict]:
+        """
+        Extract metadata from a hook's HOOK.md file.
+
+        Args:
+            hook_path: Path to hook directory
+
+        Returns:
+            Dictionary of frontmatter or None if invalid
+        """
+        hook_file = hook_path / "HOOK.md"
+        if not hook_file.exists():
+            return None
+
+        try:
+            with open(hook_file) as f:
+                content = f.read()
+            return cls._parse_frontmatter(content)
+        except Exception:
+            return None

@@ -137,3 +137,23 @@ def confirm_action(message: str, default: bool = False) -> bool:
         return default
 
     return response in ("y", "yes")
+
+
+def find_hook_directories(base_path: Path) -> List[Path]:
+    """
+    Find all hook directories (containing HOOK.md) in a base path.
+
+    Args:
+        base_path: Base directory to search
+
+    Returns:
+        List of paths to hook directories
+    """
+    hooks = []
+    if not base_path.exists():
+        return hooks
+
+    for item in base_path.rglob("HOOK.md"):
+        hooks.append(item.parent)
+
+    return sorted(hooks)
