@@ -76,6 +76,8 @@ ignore = []
 "__init__.py" = ["F401"]
 # Hooks contain embedded scripts (PowerShell, etc.) with long lines
 "hooks/**/hook.py" = ["E501"]
+# Example files use scientific variable naming (E_slab, R, G, B) and demo patterns
+"skills/**/examples/*.py" = ["N803", "N806", "E722", "F841", "E402", "UP028", "F401", "I001", "F541", "UP024", "UP015"]
 
 [tool.coverage.run]
 source = ["cli"]

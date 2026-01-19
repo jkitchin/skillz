@@ -15,10 +15,7 @@ This module showcases:
 
 from collections.abc import Callable, Iterator, Sequence, Mapping
 from dataclasses import dataclass
-from typing import (
-    Any, TypeVar, Generic, Protocol, TypeAlias,
-    Literal, Final, TypedDict, overload
-)
+from typing import Any, TypeVar, Generic, Protocol, TypeAlias, Literal, Final, TypedDict, overload
 
 
 # Basic type hints
@@ -84,37 +81,33 @@ def get_user_location(user_id: UserId) -> Coordinates:
 def parse_json(data: str) -> JsonValue:
     """Parse JSON data."""
     import json
+
     return json.loads(data)
 
 
 # Callable types (functions as parameters)
-def apply_operation(
-    values: list[int],
-    operation: Callable[[int], int]
-) -> list[int]:
+def apply_operation(values: list[int], operation: Callable[[int], int]) -> list[int]:
     """Apply operation to each value."""
     return [operation(x) for x in values]
 
 
 def create_multiplier(factor: int) -> Callable[[int], int]:
     """Create a function that multiplies by factor."""
+
     def multiply(x: int) -> int:
         return x * factor
+
     return multiply
 
 
 # More complex callable signatures
-def apply_binary_op(
-    a: int,
-    b: int,
-    operation: Callable[[int, int], int]
-) -> int:
+def apply_binary_op(a: int, b: int, operation: Callable[[int, int], int]) -> int:
     """Apply binary operation."""
     return operation(a, b)
 
 
 # Generic TypeVar
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def first_element(items: Sequence[T]) -> T | None:
@@ -128,7 +121,7 @@ def last_element(items: list[T]) -> T | None:
 
 
 # Constrained TypeVar
-NumberT = TypeVar('NumberT', int, float)
+NumberT = TypeVar("NumberT", int, float)
 
 
 def add_numbers(a: NumberT, b: NumberT) -> NumberT:
@@ -139,11 +132,12 @@ def add_numbers(a: NumberT, b: NumberT) -> NumberT:
 # Bounded TypeVar
 class Comparable(Protocol):
     """Protocol for comparable objects."""
+
     def __lt__(self, other: Any) -> bool: ...
     def __gt__(self, other: Any) -> bool: ...
 
 
-CT = TypeVar('CT', bound=Comparable)
+CT = TypeVar("CT", bound=Comparable)
 
 
 def get_max(items: Sequence[CT]) -> CT:
@@ -256,6 +250,7 @@ def render_all(shapes: Sequence[Drawable]) -> None:
 # TypedDict for structured dictionaries
 class UserDict(TypedDict):
     """Type definition for user dictionary."""
+
     username: str
     email: str
     age: int
@@ -264,6 +259,7 @@ class UserDict(TypedDict):
 
 class UserDictOptional(TypedDict, total=False):
     """User dict with optional fields."""
+
     username: str
     email: str
     age: int
@@ -272,12 +268,7 @@ class UserDictOptional(TypedDict, total=False):
 
 def create_user(username: str, email: str, age: int) -> UserDict:
     """Create user dictionary."""
-    return {
-        'username': username,
-        'email': email,
-        'age': age,
-        'is_admin': False
-    }
+    return {"username": username, "email": email, "age": age, "is_admin": False}
 
 
 def process_user(user: UserDict) -> str:
@@ -287,8 +278,8 @@ def process_user(user: UserDict) -> str:
 
 
 # Literal types (specific values only)
-Status: TypeAlias = Literal['pending', 'approved', 'rejected']
-LogLevel: TypeAlias = Literal['DEBUG', 'INFO', 'WARNING', 'ERROR']
+Status: TypeAlias = Literal["pending", "approved", "rejected"]
+LogLevel: TypeAlias = Literal["DEBUG", "INFO", "WARNING", "ERROR"]
 
 
 def set_status(item_id: int, status: Status) -> None:
@@ -296,7 +287,7 @@ def set_status(item_id: int, status: Status) -> None:
     print(f"Setting status of {item_id} to {status}")
 
 
-def log_message(message: str, level: LogLevel = 'INFO') -> None:
+def log_message(message: str, level: LogLevel = "INFO") -> None:
     """Log message with specific level."""
     print(f"[{level}] {message}")
 
@@ -321,8 +312,10 @@ class BaseConfig:
 @overload
 def process(value: int) -> str: ...
 
+
 @overload
 def process(value: str) -> int: ...
+
 
 def process(value: int | str) -> str | int:
     """Process value (different return type based on input)."""
@@ -333,8 +326,8 @@ def process(value: int | str) -> str | int:
 
 
 # Complex generic with multiple type parameters
-KT = TypeVar('KT')
-VT = TypeVar('VT')
+KT = TypeVar("KT")
+VT = TypeVar("VT")
 
 
 class BiMap(Generic[KT, VT]):
@@ -374,9 +367,7 @@ def fibonacci(n: int) -> Iterator[int]:
 
 
 # Complex return type
-def split_by_type(
-    items: Sequence[int | str]
-) -> tuple[list[int], list[str]]:
+def split_by_type(items: Sequence[int | str]) -> tuple[list[int], list[str]]:
     """Split items into integers and strings."""
     integers: list[int] = []
     strings: list[str] = []
@@ -394,24 +385,27 @@ def split_by_type(
 @dataclass
 class Point:
     """2D point with type annotations."""
+
     x: float
     y: float
 
     def distance_from_origin(self) -> float:
         """Calculate distance from origin."""
-        return (self.x ** 2 + self.y ** 2) ** 0.5
+        return (self.x**2 + self.y**2) ** 0.5
 
 
 @dataclass
 class Circle2:
     """Circle with center point."""
+
     center: Point
     radius: float
 
     def area(self) -> float:
         """Calculate circle area."""
         import math
-        return math.pi * self.radius ** 2
+
+        return math.pi * self.radius**2
 
 
 # Context manager with type hints
@@ -423,7 +417,7 @@ from typing import Iterator as IteratorType
 def temporary_file(path: str) -> IteratorType[str]:
     """Context manager for temporary file."""
     # Setup
-    with open(path, 'w') as f:
+    with open(path, "w") as f:
         f.write("temp")
 
     try:
@@ -431,6 +425,7 @@ def temporary_file(path: str) -> IteratorType[str]:
     finally:
         # Cleanup
         import os
+
         os.remove(path)
 
 
@@ -453,11 +448,7 @@ class Database:
         """Close connection."""
         self._connected = False
 
-    def execute(
-        self,
-        query: str,
-        parameters: dict[str, Any] | None = None
-    ) -> list[dict[str, Any]]:
+    def execute(self, query: str, parameters: dict[str, Any] | None = None) -> list[dict[str, Any]]:
         """Execute query and return results."""
         if parameters is None:
             parameters = {}
@@ -521,7 +512,7 @@ class Builder:
 # result: str = builder.add("Hello").add(" World").build()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Demonstrate various type-safe operations
     print(greet("World"))
     print(calculate_total([10.0, 20.0, 30.0]))
@@ -530,12 +521,9 @@ if __name__ == '__main__':
     demo_generic_stack()
 
     # Protocols
-    shapes: list[Drawable] = [
-        Circle(10, 10, 5),
-        Rectangle(20, 20, 10, 15)
-    ]
+    shapes: list[Drawable] = [Circle(10, 10, 5), Rectangle(20, 20, 10, 15)]
     render_all(shapes)
 
     # Literal types
-    set_status(1, 'approved')
-    log_message("Application started", 'INFO')
+    set_status(1, "approved")
+    log_message("Application started", "INFO")

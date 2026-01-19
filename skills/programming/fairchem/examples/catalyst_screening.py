@@ -23,7 +23,7 @@ def calculate_adsorption_energy(
     size=(4, 4, 4),
     adsorption_site="fcc",
     calculator=None,
-    fmax=0.05
+    fmax=0.05,
 ):
     """
     Calculate adsorption energy using FAIRChem.
@@ -81,6 +81,7 @@ def calculate_adsorption_energy(
     # Step 3: Isolated adsorbate
     if adsorbate in ["CO", "H2O", "CH4"]:
         from ase.build import molecule
+
         isolated = molecule(adsorbate)
     else:
         isolated = Atoms(adsorbate, positions=[(0, 0, 0)])
@@ -104,17 +105,11 @@ def calculate_adsorption_energy(
         "E_slab": E_slab,
         "E_slab_ads": E_slab_ads,
         "E_adsorbate": E_adsorbate,
-        "E_adsorption": E_ads
+        "E_adsorption": E_ads,
     }
 
 
-def screen_metals(
-    metals,
-    adsorbate="CO",
-    model_name="uma-m-1p1",
-    use_turbo=False,
-    workers=1
-):
+def screen_metals(metals, adsorbate="CO", model_name="uma-m-1p1", use_turbo=False, workers=1):
     """
     Screen multiple metals for adsorption.
 
@@ -137,23 +132,20 @@ def screen_metals(
         Results for each metal
     """
 
-    print("="*60)
+    print("=" * 60)
     print(f"High-Throughput Catalyst Screening with FAIRChem")
-    print("="*60)
+    print("=" * 60)
     print(f"Model: {model_name}")
     print(f"Adsorbate: {adsorbate}")
     print(f"Metals: {', '.join(metals)}")
     print(f"Turbo mode: {use_turbo}")
     print(f"Workers: {workers}")
-    print("="*60)
+    print("=" * 60)
 
     # Load model
     print("\nLoading FAIRChem model...")
     if use_turbo:
-        predict_unit = load_predict_unit(
-            model_name,
-            inference_settings="turbo"
-        )
+        predict_unit = load_predict_unit(model_name, inference_settings="turbo")
     else:
         predict_unit = load_predict_unit(model_name)
 
@@ -161,7 +153,7 @@ def screen_metals(
     calc = FAIRChemCalculator(
         predict_unit=predict_unit,
         task_name="oc20",  # Catalysis domain
-        workers=workers
+        workers=workers,
     )
 
     print("Model loaded successfully!\n")
@@ -171,10 +163,7 @@ def screen_metals(
     for metal in metals:
         try:
             result = calculate_adsorption_energy(
-                metal=metal,
-                adsorbate=adsorbate,
-                calculator=calc,
-                fmax=0.05
+                metal=metal, adsorbate=adsorbate, calculator=calc, fmax=0.05
             )
             results.append(result)
         except Exception as e:
@@ -196,25 +185,31 @@ def analyze_and_plot_results(results, adsorbate="CO"):
         Adsorbate name for plot title
     """
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("RESULTS SUMMARY")
-    print("="*60)
+    print("=" * 60)
 
     # Sort by adsorption energy
     results_sorted = sorted(results, key=lambda x: x["E_adsorption"])
 
     # Print table
     print(f"\n{'Metal':<10} {'E_ads (eV)':<15} {'Binding':<15}")
-    print("-"*60)
+    print("-" * 60)
 
     for res in results_sorted:
-        binding = "Strong" if res["E_adsorption"] < -2.0 else \
-                  "Moderate" if res["E_adsorption"] < -1.0 else \
-                  "Weak" if res["E_adsorption"] < 0 else "Unfavorable"
+        binding = (
+            "Strong"
+            if res["E_adsorption"] < -2.0
+            else "Moderate"
+            if res["E_adsorption"] < -1.0
+            else "Weak"
+            if res["E_adsorption"] < 0
+            else "Unfavorable"
+        )
 
         print(f"{res['metal']:<10} {res['E_adsorption']:<15.3f} {binding:<15}")
 
-    print("-"*60)
+    print("-" * 60)
 
     # Best catalyst
     best = results_sorted[0]
@@ -230,35 +225,35 @@ def analyze_and_plot_results(results, adsorbate="CO"):
         fig, ax = plt.subplots(figsize=(10, 6))
 
         # Bar plot
-        colors = ['green' if e < -1.0 else 'orange' if e < 0 else 'red'
-                 for e in energies]
-        ax.bar(metals, energies, color=colors, alpha=0.7, edgecolor='black')
+        colors = ["green" if e < -1.0 else "orange" if e < 0 else "red" for e in energies]
+        ax.bar(metals, energies, color=colors, alpha=0.7, edgecolor="black")
 
         # Reference line at 0
-        ax.axhline(y=0, color='black', linestyle='--', alpha=0.5)
+        ax.axhline(y=0, color="black", linestyle="--", alpha=0.5)
 
         # Labels
-        ax.set_xlabel('Metal', fontsize=12)
-        ax.set_ylabel('Adsorption Energy (eV)', fontsize=12)
-        ax.set_title(f'{adsorbate} Adsorption Energy on Different Metals\n'
-                    f'(FAIRChem Screening)', fontsize=14)
-        ax.grid(True, alpha=0.3, axis='y')
+        ax.set_xlabel("Metal", fontsize=12)
+        ax.set_ylabel("Adsorption Energy (eV)", fontsize=12)
+        ax.set_title(
+            f"{adsorbate} Adsorption Energy on Different Metals\n(FAIRChem Screening)", fontsize=14
+        )
+        ax.grid(True, alpha=0.3, axis="y")
 
         # Rotate x labels if many metals
         if len(metals) > 5:
-            plt.xticks(rotation=45, ha='right')
+            plt.xticks(rotation=45, ha="right")
 
         plt.tight_layout()
-        plt.savefig(f'{adsorbate}_screening_results.png', dpi=300)
+        plt.savefig(f"{adsorbate}_screening_results.png", dpi=300)
         print(f"\nPlot saved: {adsorbate}_screening_results.png")
 
     except ImportError:
         print("\nNote: Install matplotlib for visualization")
 
-    print("="*60)
+    print("=" * 60)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Example 1: Screen FCC metals for CO adsorption
     print("\nExample 1: Screening FCC metals for CO adsorption\n")
 
@@ -269,7 +264,7 @@ if __name__ == '__main__':
         adsorbate="CO",
         model_name="uma-m-1p1",  # Medium model for accuracy
         use_turbo=False,
-        workers=1
+        workers=1,
     )
 
     analyze_and_plot_results(results, adsorbate="CO")

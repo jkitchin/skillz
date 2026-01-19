@@ -22,9 +22,9 @@ import argparse
 def analyze_structure(structure_file):
     """Perform comprehensive structure analysis."""
 
-    print("="*60)
+    print("=" * 60)
     print("PYMATGEN STRUCTURE ANALYSIS WORKFLOW")
-    print("="*60)
+    print("=" * 60)
 
     # 1. Load structure
     print("\n1. Loading structure...")
@@ -126,19 +126,14 @@ def analyze_structure(structure_file):
     structure.to(filename="structure_output.json")
     print("   ✓ JSON: structure_output.json")
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("ANALYSIS COMPLETE")
-    print("="*60)
+    print("=" * 60)
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Analyze crystal structure using pymatgen"
-    )
-    parser.add_argument(
-        "structure_file",
-        help="Input structure file (CIF, POSCAR, etc.)"
-    )
+    parser = argparse.ArgumentParser(description="Analyze crystal structure using pymatgen")
+    parser.add_argument("structure_file", help="Input structure file (CIF, POSCAR, etc.)")
     args = parser.parse_args()
 
     try:

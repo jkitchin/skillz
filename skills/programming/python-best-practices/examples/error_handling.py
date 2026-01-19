@@ -17,8 +17,7 @@ from typing import Any, Iterator, TypeAlias
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -53,7 +52,7 @@ class ValidationError(ApplicationError):
             message: Validation error message
             value: The invalid value (optional)
         """
-        details = {'field': field, 'value': value}
+        details = {"field": field, "value": value}
         super().__init__(f"Validation failed for '{field}': {message}", details)
         self.field = field
         self.value = value
@@ -69,20 +68,19 @@ class ResourceNotFoundError(ApplicationError):
             resource_type: Type of resource (e.g., 'user', 'file')
             resource_id: Identifier for the resource
         """
-        details = {'resource_type': resource_type, 'resource_id': resource_id}
-        super().__init__(
-            f"{resource_type} not found: {resource_id}",
-            details
-        )
+        details = {"resource_type": resource_type, "resource_id": resource_id}
+        super().__init__(f"{resource_type} not found: {resource_id}", details)
 
 
 class DatabaseError(ApplicationError):
     """Raised for database-related errors."""
+
     pass
 
 
 class ConfigurationError(ApplicationError):
     """Raised for configuration-related errors."""
+
     pass
 
 
@@ -100,21 +98,21 @@ def validate_email(email: str) -> str:
         ValidationError: If email format is invalid
     """
     if not email:
-        raise ValidationError('email', 'Email cannot be empty', email)
+        raise ValidationError("email", "Email cannot be empty", email)
 
-    if '@' not in email:
-        raise ValidationError('email', 'Email must contain @', email)
+    if "@" not in email:
+        raise ValidationError("email", "Email must contain @", email)
 
-    parts = email.split('@')
+    parts = email.split("@")
     if len(parts) != 2:
-        raise ValidationError('email', 'Email must have exactly one @', email)
+        raise ValidationError("email", "Email must have exactly one @", email)
 
     local, domain = parts
     if not local or not domain:
-        raise ValidationError('email', 'Email parts cannot be empty', email)
+        raise ValidationError("email", "Email parts cannot be empty", email)
 
-    if '.' not in domain:
-        raise ValidationError('email', 'Domain must contain a dot', email)
+    if "." not in domain:
+        raise ValidationError("email", "Domain must contain a dot", email)
 
     return email.lower()
 
@@ -132,13 +130,13 @@ def validate_age(age: int) -> int:
         ValidationError: If age is invalid
     """
     if not isinstance(age, int):
-        raise ValidationError('age', 'Age must be an integer', age)
+        raise ValidationError("age", "Age must be an integer", age)
 
     if age < 0:
-        raise ValidationError('age', 'Age cannot be negative', age)
+        raise ValidationError("age", "Age cannot be negative", age)
 
     if age > 150:
-        raise ValidationError('age', 'Age is unrealistically high', age)
+        raise ValidationError("age", "Age is unrealistically high", age)
 
     return age
 
@@ -180,7 +178,7 @@ def read_file_safe(filepath: Path) -> str | None:
         File content or None if reading fails
     """
     try:
-        return filepath.read_text(encoding='utf-8')
+        return filepath.read_text(encoding="utf-8")
     except FileNotFoundError:
         logger.warning(f"File not found: {filepath}")
         return None
@@ -209,17 +207,13 @@ def process_file_with_recovery(filepath: Path) -> dict[str, Any]:
     """
     try:
         if not filepath.exists():
-            raise ResourceNotFoundError('file', str(filepath))
+            raise ResourceNotFoundError("file", str(filepath))
 
-        content = filepath.read_text(encoding='utf-8')
+        content = filepath.read_text(encoding="utf-8")
 
         # Process content
         lines = [line.strip() for line in content.splitlines()]
-        return {
-            'status': 'success',
-            'lines': len(lines),
-            'size': filepath.stat().st_size
-        }
+        return {"status": "success", "lines": len(lines), "size": filepath.stat().st_size}
 
     except ResourceNotFoundError:
         # This is expected, re-raise
@@ -233,29 +227,25 @@ def process_file_with_recovery(filepath: Path) -> dict[str, Any]:
         logger.error(f"Encoding error in {filepath}")
         # Try recovery with different encoding
         try:
-            content = filepath.read_text(encoding='latin-1')
+            content = filepath.read_text(encoding="latin-1")
             logger.info(f"Successfully recovered using latin-1 encoding")
             return {
-                'status': 'recovered',
-                'lines': len(content.splitlines()),
-                'size': filepath.stat().st_size,
-                'encoding': 'latin-1'
+                "status": "recovered",
+                "lines": len(content.splitlines()),
+                "size": filepath.stat().st_size,
+                "encoding": "latin-1",
             }
         except Exception as recovery_error:
-            raise ApplicationError(
-                f"Failed to read file with any encoding: {filepath}"
-            ) from e
+            raise ApplicationError(f"Failed to read file with any encoding: {filepath}") from e
 
     except Exception as e:
         logger.exception(f"Unexpected error processing {filepath}")
-        raise ApplicationError(
-            f"Processing failed: {filepath}"
-        ) from e
+        raise ApplicationError(f"Processing failed: {filepath}") from e
 
 
 # 4. Context Managers for Resource Management
 @contextmanager
-def open_file_safe(filepath: Path, mode: str = 'r') -> Iterator[Any]:
+def open_file_safe(filepath: Path, mode: str = "r") -> Iterator[Any]:
     """Context manager for safe file handling.
 
     Args:
@@ -270,12 +260,12 @@ def open_file_safe(filepath: Path, mode: str = 'r') -> Iterator[Any]:
     """
     file_handle = None
     try:
-        file_handle = filepath.open(mode, encoding='utf-8')
+        file_handle = filepath.open(mode, encoding="utf-8")
         logger.debug(f"Opened file: {filepath}")
         yield file_handle
 
     except FileNotFoundError as e:
-        raise ResourceNotFoundError('file', str(filepath)) from e
+        raise ResourceNotFoundError("file", str(filepath)) from e
 
     except PermissionError as e:
         raise ApplicationError(f"Permission denied: {filepath}") from e
@@ -319,11 +309,7 @@ def transaction_scope(connection: Any) -> Iterator[None]:
 
 
 # 5. Retry Logic
-def retry_on_failure(
-    func: Any,
-    max_attempts: int = 3,
-    delay: float = 1.0
-) -> Any:
+def retry_on_failure(func: Any, max_attempts: int = 3, delay: float = 1.0) -> Any:
     """Retry function on failure.
 
     Args:
@@ -348,10 +334,7 @@ def retry_on_failure(
 
         except Exception as e:
             last_exception = e
-            logger.warning(
-                f"Attempt {attempt} failed: {e}",
-                exc_info=attempt == max_attempts
-            )
+            logger.warning(f"Attempt {attempt} failed: {e}", exc_info=attempt == max_attempts)
 
             if attempt < max_attempts:
                 logger.info(f"Retrying in {delay} seconds...")
@@ -376,17 +359,17 @@ def sanitize_filename(filename: str) -> str:
         ValidationError: If filename is invalid
     """
     if not filename:
-        raise ValidationError('filename', 'Filename cannot be empty', filename)
+        raise ValidationError("filename", "Filename cannot be empty", filename)
 
     # Remove path separators
-    filename = filename.replace('/', '_').replace('\\', '_')
+    filename = filename.replace("/", "_").replace("\\", "_")
 
     # Remove special characters
-    allowed_chars = set('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-')
-    sanitized = ''.join(c if c in allowed_chars else '_' for c in filename)
+    allowed_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-")
+    sanitized = "".join(c if c in allowed_chars else "_" for c in filename)
 
-    if not sanitized or sanitized in ('.', '..'):
-        raise ValidationError('filename', 'Invalid filename after sanitization', filename)
+    if not sanitized or sanitized in (".", ".."):
+        raise ValidationError("filename", "Invalid filename after sanitization", filename)
 
     return sanitized
 
@@ -406,26 +389,26 @@ def validate_user_input(data: dict[str, Any]) -> dict[str, Any]:
     validated = {}
 
     # Required fields
-    required_fields = ['username', 'email', 'age']
+    required_fields = ["username", "email", "age"]
     for field in required_fields:
         if field not in data:
-            raise ValidationError(field, 'Required field missing')
+            raise ValidationError(field, "Required field missing")
 
     # Validate username
-    username = data['username']
+    username = data["username"]
     if not isinstance(username, str) or not username.strip():
-        raise ValidationError('username', 'Username must be non-empty string', username)
+        raise ValidationError("username", "Username must be non-empty string", username)
     if len(username) < 3:
-        raise ValidationError('username', 'Username must be at least 3 characters', username)
+        raise ValidationError("username", "Username must be at least 3 characters", username)
     if len(username) > 50:
-        raise ValidationError('username', 'Username too long (max 50)', username)
-    validated['username'] = username.strip()
+        raise ValidationError("username", "Username too long (max 50)", username)
+    validated["username"] = username.strip()
 
     # Validate email
-    validated['email'] = validate_email(data['email'])
+    validated["email"] = validate_email(data["email"])
 
     # Validate age
-    validated['age'] = validate_age(data['age'])
+    validated["age"] = validate_age(data["age"])
 
     return validated
 
@@ -468,9 +451,7 @@ class DataProcessor:
                 self.errors.append((error_context, e))
 
                 if self.strict_mode:
-                    raise ApplicationError(
-                        f"Batch processing failed at item {i}"
-                    ) from e
+                    raise ApplicationError(f"Batch processing failed at item {i}") from e
                 else:
                     logger.warning(f"Skipping invalid item {i}: {e}")
 
@@ -479,17 +460,12 @@ class DataProcessor:
                 self.errors.append((error_context, e))
 
                 if self.strict_mode:
-                    raise ApplicationError(
-                        f"Unexpected error at item {i}"
-                    ) from e
+                    raise ApplicationError(f"Unexpected error at item {i}") from e
                 else:
                     logger.error(f"Error processing item {i}: {e}", exc_info=True)
 
         if self.errors:
-            logger.info(
-                f"Processed {len(results)} items successfully, "
-                f"{len(self.errors)} errors"
-            )
+            logger.info(f"Processed {len(results)} items successfully, {len(self.errors)} errors")
 
         return results
 
@@ -506,14 +482,11 @@ class DataProcessor:
             ValidationError: If item is invalid
         """
         # Validate required fields
-        if 'id' not in item:
-            raise ValidationError('id', 'Missing required field')
+        if "id" not in item:
+            raise ValidationError("id", "Missing required field")
 
         # Process...
-        return {
-            'id': item['id'],
-            'processed': True
-        }
+        return {"id": item["id"], "processed": True}
 
 
 # 8. Logging Best Practices
@@ -586,5 +559,5 @@ def main() -> int:
         return 99
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

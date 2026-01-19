@@ -17,7 +17,7 @@ from ase.constraints import FixAtoms
 from ase.io import read, write
 
 
-def create_initial_state(size=(4, 4, 4), adsorbate_position='fcc'):
+def create_initial_state(size=(4, 4, 4), adsorbate_position="fcc"):
     """
     Create initial state with adsorbate at one site.
 
@@ -33,7 +33,7 @@ def create_initial_state(size=(4, 4, 4), adsorbate_position='fcc'):
     Atoms
         Initial state structure
     """
-    slab = fcc111('Pt', size=size, vacuum=10.0)
+    slab = fcc111("Pt", size=size, vacuum=10.0)
 
     # Fix bottom two layers
     n_layers = size[2]
@@ -42,12 +42,12 @@ def create_initial_state(size=(4, 4, 4), adsorbate_position='fcc'):
     slab.set_constraint(constraint)
 
     # Add adsorbate
-    add_adsorbate(slab, 'O', height=2.0, position=adsorbate_position)
+    add_adsorbate(slab, "O", height=2.0, position=adsorbate_position)
 
     return slab
 
 
-def create_final_state(size=(4, 4, 4), adsorbate_position='hcp'):
+def create_final_state(size=(4, 4, 4), adsorbate_position="hcp"):
     """
     Create final state with adsorbate at different site.
 
@@ -63,7 +63,7 @@ def create_final_state(size=(4, 4, 4), adsorbate_position='hcp'):
     Atoms
         Final state structure
     """
-    slab = fcc111('Pt', size=size, vacuum=10.0)
+    slab = fcc111("Pt", size=size, vacuum=10.0)
 
     # Fix bottom two layers (same as initial)
     n_layers = size[2]
@@ -72,17 +72,13 @@ def create_final_state(size=(4, 4, 4), adsorbate_position='hcp'):
     slab.set_constraint(constraint)
 
     # Add adsorbate at different position
-    add_adsorbate(slab, 'O', height=2.0, position=adsorbate_position)
+    add_adsorbate(slab, "O", height=2.0, position=adsorbate_position)
 
     return slab
 
 
 def calculate_reaction_barrier(
-    n_images=7,
-    spring_constant=1.0,
-    fmax=0.05,
-    optimize_endpoints=True,
-    plot=True
+    n_images=7, spring_constant=1.0, fmax=0.05, optimize_endpoints=True, plot=True
 ):
     """
     Calculate reaction barrier using NEB.
@@ -106,18 +102,18 @@ def calculate_reaction_barrier(
         Barrier heights and energies
     """
 
-    print("="*60)
+    print("=" * 60)
     print("NEB Calculation: O diffusion on Pt(111)")
-    print("="*60)
+    print("=" * 60)
 
     # Step 1: Create and optimize initial state
     print("\n1. Creating initial state (O at FCC site)...")
-    initial = create_initial_state(adsorbate_position='fcc')
+    initial = create_initial_state(adsorbate_position="fcc")
     initial.calc = EMT()
 
     if optimize_endpoints:
         print("   Optimizing initial state...")
-        opt = BFGS(initial, trajectory='initial.traj', logfile='initial.log')
+        opt = BFGS(initial, trajectory="initial.traj", logfile="initial.log")
         opt.run(fmax=fmax)
 
     E_initial = initial.get_potential_energy()
@@ -125,12 +121,12 @@ def calculate_reaction_barrier(
 
     # Step 2: Create and optimize final state
     print("\n2. Creating final state (O at HCP site)...")
-    final = create_final_state(adsorbate_position='hcp')
+    final = create_final_state(adsorbate_position="hcp")
     final.calc = EMT()
 
     if optimize_endpoints:
         print("   Optimizing final state...")
-        opt = BFGS(final, trajectory='final.traj', logfile='final.log')
+        opt = BFGS(final, trajectory="final.traj", logfile="final.log")
         opt.run(fmax=fmax)
 
     E_final = final.get_potential_energy()
@@ -163,17 +159,17 @@ def calculate_reaction_barrier(
     print("\n4. Optimizing NEB...")
     print(f"   Convergence criterion: max force < {fmax} eV/Å")
 
-    opt = BFGS(neb, trajectory='neb.traj', logfile='neb.log')
+    opt = BFGS(neb, trajectory="neb.traj", logfile="neb.log")
 
     # Run optimization with progress reporting
     def print_progress():
-        forces = [np.sqrt((image.get_forces()**2).sum(axis=1).max())
-                 for image in images[1:-1]]
+        forces = [np.sqrt((image.get_forces() ** 2).sum(axis=1).max()) for image in images[1:-1]]
         max_force = max(forces)
         energies = [image.get_potential_energy() for image in images]
         barrier = max(energies) - energies[0]
-        print(f"      Step {opt.nsteps}: max force = {max_force:.4f} eV/Å, "
-              f"barrier = {barrier:.3f} eV")
+        print(
+            f"      Step {opt.nsteps}: max force = {max_force:.4f} eV/Å, barrier = {barrier:.3f} eV"
+        )
 
     opt.attach(print_progress, interval=5)
     opt.run(fmax=fmax)
@@ -196,9 +192,9 @@ def calculate_reaction_barrier(
     reverse_barrier = E_ts - E_final
     reaction_energy = E_final - E_initial
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("RESULTS")
-    print("="*60)
+    print("=" * 60)
     print(f"Initial state energy:      {E_initial:.3f} eV")
     print(f"Final state energy:        {E_final:.3f} eV")
     print(f"Transition state energy:   {E_ts:.3f} eV")
@@ -206,10 +202,10 @@ def calculate_reaction_barrier(
     print(f"\nForward barrier:           {forward_barrier:.3f} eV")
     print(f"Reverse barrier:           {reverse_barrier:.3f} eV")
     print(f"Reaction energy:           {reaction_energy:.3f} eV")
-    print("="*60)
+    print("=" * 60)
 
     # Save transition state
-    write('transition_state.traj', images[ts_index])
+    write("transition_state.traj", images[ts_index])
     print(f"\nTransition state saved to: transition_state.traj")
 
     # Plot energy profile
@@ -220,51 +216,52 @@ def calculate_reaction_barrier(
         x = np.arange(len(images))
 
         # Plot energy profile
-        ax.plot(x, energies_relative, 'o-', linewidth=2, markersize=10,
-               label='Energy profile')
+        ax.plot(x, energies_relative, "o-", linewidth=2, markersize=10, label="Energy profile")
 
         # Mark initial, transition, and final states
-        ax.plot(0, energies_relative[0], 'go', markersize=15, label='Initial')
-        ax.plot(ts_index, energies_relative[ts_index], 'ro', markersize=15,
-               label='Transition state')
-        ax.plot(len(images)-1, energies_relative[-1], 'bo', markersize=15,
-               label='Final')
+        ax.plot(0, energies_relative[0], "go", markersize=15, label="Initial")
+        ax.plot(
+            ts_index, energies_relative[ts_index], "ro", markersize=15, label="Transition state"
+        )
+        ax.plot(len(images) - 1, energies_relative[-1], "bo", markersize=15, label="Final")
 
         # Add horizontal lines for reference
-        ax.axhline(y=0, color='g', linestyle='--', alpha=0.5)
-        ax.axhline(y=forward_barrier, color='r', linestyle='--', alpha=0.5)
+        ax.axhline(y=0, color="g", linestyle="--", alpha=0.5)
+        ax.axhline(y=forward_barrier, color="r", linestyle="--", alpha=0.5)
 
         # Add barrier annotation
-        ax.annotate(f'E_a = {forward_barrier:.3f} eV',
-                   xy=(ts_index, energies_relative[ts_index]),
-                   xytext=(ts_index + 1, energies_relative[ts_index] + 0.1),
-                   arrowprops=dict(arrowstyle='->', color='red'),
-                   fontsize=12, color='red')
+        ax.annotate(
+            f"E_a = {forward_barrier:.3f} eV",
+            xy=(ts_index, energies_relative[ts_index]),
+            xytext=(ts_index + 1, energies_relative[ts_index] + 0.1),
+            arrowprops=dict(arrowstyle="->", color="red"),
+            fontsize=12,
+            color="red",
+        )
 
-        ax.set_xlabel('Reaction coordinate (image index)', fontsize=12)
-        ax.set_ylabel('Relative energy (eV)', fontsize=12)
-        ax.set_title('NEB Energy Profile: O diffusion FCC → HCP on Pt(111)',
-                    fontsize=14)
+        ax.set_xlabel("Reaction coordinate (image index)", fontsize=12)
+        ax.set_ylabel("Relative energy (eV)", fontsize=12)
+        ax.set_title("NEB Energy Profile: O diffusion FCC → HCP on Pt(111)", fontsize=14)
         ax.legend(fontsize=10)
         ax.grid(True, alpha=0.3)
 
         plt.tight_layout()
-        plt.savefig('neb_profile.png', dpi=300)
+        plt.savefig("neb_profile.png", dpi=300)
         print(f"Energy profile saved to: neb_profile.png")
 
     return {
-        'E_initial': E_initial,
-        'E_final': E_final,
-        'E_transition_state': E_ts,
-        'forward_barrier': forward_barrier,
-        'reverse_barrier': reverse_barrier,
-        'reaction_energy': reaction_energy,
-        'energies': energies,
-        'ts_index': ts_index
+        "E_initial": E_initial,
+        "E_final": E_final,
+        "E_transition_state": E_ts,
+        "forward_barrier": forward_barrier,
+        "reverse_barrier": reverse_barrier,
+        "reaction_energy": reaction_energy,
+        "energies": energies,
+        "ts_index": ts_index,
     }
 
 
-def analyze_neb_trajectory(trajectory_file='neb.traj'):
+def analyze_neb_trajectory(trajectory_file="neb.traj"):
     """
     Analyze convergence of NEB optimization.
 
@@ -273,11 +270,11 @@ def analyze_neb_trajectory(trajectory_file='neb.traj'):
     trajectory_file : str
         Path to NEB trajectory file
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Analyzing NEB convergence")
-    print("="*60)
+    print("=" * 60)
 
-    traj = read(trajectory_file, ':')
+    traj = read(trajectory_file, ":")
     n_steps = len(traj) // (len(traj[0]))  # Number of optimization steps
 
     print(f"Total optimization steps: {n_steps}")
@@ -288,22 +285,22 @@ def analyze_neb_trajectory(trajectory_file='neb.traj'):
     # Energy convergence
     barriers = []
     for i in range(0, len(traj), len(traj) // n_steps):
-        energies = [atoms.get_potential_energy() for atoms in traj[i:i+7]]
+        energies = [atoms.get_potential_energy() for atoms in traj[i : i + 7]]
         barrier = max(energies) - energies[0]
         barriers.append(barrier)
 
-    ax1.plot(barriers, 'o-', linewidth=2)
-    ax1.set_xlabel('Optimization step')
-    ax1.set_ylabel('Activation barrier (eV)')
-    ax1.set_title('Barrier convergence')
+    ax1.plot(barriers, "o-", linewidth=2)
+    ax1.set_xlabel("Optimization step")
+    ax1.set_ylabel("Activation barrier (eV)")
+    ax1.set_title("Barrier convergence")
     ax1.grid(True, alpha=0.3)
 
     plt.tight_layout()
-    plt.savefig('neb_convergence.png', dpi=300)
+    plt.savefig("neb_convergence.png", dpi=300)
     print("Convergence plot saved to: neb_convergence.png")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("\nNEB Example: Oxygen diffusion on Pt(111) surface")
     print("Process: O atom moving from FCC site to HCP site\n")
 
@@ -313,7 +310,7 @@ if __name__ == '__main__':
         spring_constant=1.0,
         fmax=0.05,
         optimize_endpoints=True,
-        plot=True
+        plot=True,
     )
 
     # Optionally analyze convergence

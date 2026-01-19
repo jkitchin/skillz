@@ -18,7 +18,7 @@ from typing import Protocol
 # Constants
 DEFAULT_TIMEOUT = 30
 MAX_RETRIES = 3
-VALID_STATUSES = frozenset(['pending', 'processing', 'completed', 'failed'])
+VALID_STATUSES = frozenset(["pending", "processing", "completed", "failed"])
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -27,16 +27,19 @@ logger = logging.getLogger(__name__)
 # Custom Exceptions
 class DataProcessingError(Exception):
     """Base exception for data processing errors."""
+
     pass
 
 
 class ValidationError(DataProcessingError):
     """Raised when data validation fails."""
+
     pass
 
 
 class ResourceNotFoundError(DataProcessingError):
     """Raised when required resource is not found."""
+
     pass
 
 
@@ -65,11 +68,12 @@ class ProcessorConfig:
         validate: Whether to validate data before processing
         allowed_extensions: Set of allowed file extensions
     """
+
     input_dir: Path
     output_dir: Path
     timeout: int = DEFAULT_TIMEOUT
     validate: bool = True
-    allowed_extensions: set[str] = field(default_factory=lambda: {'.txt', '.csv', '.json'})
+    allowed_extensions: set[str] = field(default_factory=lambda: {".txt", ".csv", ".json"})
 
     def __post_init__(self):
         """Validate configuration after initialization."""
@@ -104,11 +108,7 @@ class DataProcessor:
         """
         self.config = config
         self.store = store
-        self.stats = {
-            'processed': 0,
-            'failed': 0,
-            'skipped': 0
-        }
+        self.stats = {"processed": 0, "failed": 0, "skipped": 0}
         logger.info(f"DataProcessor initialized with config: {config}")
 
     def process_file(self, filepath: Path) -> dict[str, any]:
@@ -140,19 +140,19 @@ class DataProcessor:
             output_path = self._write_output(filepath, processed_data)
 
             result = {
-                'status': 'completed',
-                'lines': len(content.splitlines()),
-                'timestamp': datetime.now().isoformat(),
-                'output': str(output_path)
+                "status": "completed",
+                "lines": len(content.splitlines()),
+                "timestamp": datetime.now().isoformat(),
+                "output": str(output_path),
             }
 
-            self.stats['processed'] += 1
+            self.stats["processed"] += 1
             logger.info(f"Successfully processed {filepath}")
 
             return result
 
         except Exception as e:
-            self.stats['failed'] += 1
+            self.stats["failed"] += 1
             logger.error(f"Failed to process {filepath}: {e}", exc_info=True)
             raise DataProcessingError(f"Processing failed for {filepath}") from e
 
@@ -176,7 +176,7 @@ class DataProcessor:
                 results.append(result)
             except DataProcessingError as e:
                 logger.warning(f"Skipping file {filepath}: {e}")
-                self.stats['skipped'] += 1
+                self.stats["skipped"] += 1
                 continue
 
         logger.info(f"Processing complete. Stats: {self.stats}")
@@ -207,8 +207,7 @@ class DataProcessor:
         # Check file extension
         if filepath.suffix not in self.config.allowed_extensions:
             logger.warning(
-                f"Invalid extension {filepath.suffix}, "
-                f"allowed: {self.config.allowed_extensions}"
+                f"Invalid extension {filepath.suffix}, allowed: {self.config.allowed_extensions}"
             )
             return False
 
@@ -232,7 +231,7 @@ class DataProcessor:
             DataProcessingError: If reading fails
         """
         try:
-            return filepath.read_text(encoding='utf-8')
+            return filepath.read_text(encoding="utf-8")
         except UnicodeDecodeError as e:
             raise DataProcessingError(f"Failed to decode {filepath}") from e
         except IOError as e:
@@ -254,7 +253,7 @@ class DataProcessor:
         header = f"# Processed at {datetime.now().isoformat()}\n"
         footer = f"\n# Total lines: {len(lines)}"
 
-        return header + '\n'.join(lines) + footer
+        return header + "\n".join(lines) + footer
 
     def _write_output(self, original_path: Path, content: str) -> Path:
         """Write processed content to output file.
@@ -269,7 +268,7 @@ class DataProcessor:
         output_path = self.config.output_dir / f"processed_{original_path.name}"
 
         try:
-            output_path.write_text(content, encoding='utf-8')
+            output_path.write_text(content, encoding="utf-8")
             logger.debug(f"Wrote output to {output_path}")
             return output_path
         except IOError as e:
@@ -304,14 +303,14 @@ def create_processor_from_config_file(config_path: Path) -> DataProcessor:
     """
     import tomllib
 
-    with config_path.open('rb') as f:
+    with config_path.open("rb") as f:
         config_data = tomllib.load(f)
 
     config = ProcessorConfig(
-        input_dir=Path(config_data['input_dir']),
-        output_dir=Path(config_data['output_dir']),
-        timeout=config_data.get('timeout', DEFAULT_TIMEOUT),
-        validate=config_data.get('validate', True)
+        input_dir=Path(config_data["input_dir"]),
+        output_dir=Path(config_data["output_dir"]),
+        timeout=config_data.get("timeout", DEFAULT_TIMEOUT),
+        validate=config_data.get("validate", True),
     )
 
     return DataProcessor(config)
@@ -322,31 +321,23 @@ def main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(description="Process data files")
-    parser.add_argument('input_dir', type=Path, help="Input directory")
-    parser.add_argument('output_dir', type=Path, help="Output directory")
+    parser.add_argument("input_dir", type=Path, help="Input directory")
+    parser.add_argument("output_dir", type=Path, help="Output directory")
     parser.add_argument(
-        '--timeout',
+        "--timeout",
         type=int,
         default=DEFAULT_TIMEOUT,
-        help=f"Timeout in seconds (default: {DEFAULT_TIMEOUT})"
+        help=f"Timeout in seconds (default: {DEFAULT_TIMEOUT})",
     )
-    parser.add_argument(
-        '--no-validate',
-        action='store_true',
-        help="Skip validation"
-    )
-    parser.add_argument(
-        '-v', '--verbose',
-        action='store_true',
-        help="Verbose output"
-    )
+    parser.add_argument("--no-validate", action="store_true", help="Skip validation")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
 
     args = parser.parse_args()
 
     # Configure logging
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     # Create processor
@@ -354,7 +345,7 @@ def main() -> None:
         input_dir=args.input_dir,
         output_dir=args.output_dir,
         timeout=args.timeout,
-        validate=not args.no_validate
+        validate=not args.no_validate,
     )
 
     processor = DataProcessor(config)
@@ -375,5 +366,5 @@ def main() -> None:
         return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

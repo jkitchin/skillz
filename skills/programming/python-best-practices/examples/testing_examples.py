@@ -50,11 +50,7 @@ class UserManager:
         if self.database.user_exists(username):
             raise ValueError(f"User {username} already exists")
 
-        user_data = {
-            'username': username,
-            'email': email,
-            'created_at': datetime.now().isoformat()
-        }
+        user_data = {"username": username, "email": email, "created_at": datetime.now().isoformat()}
 
         self.database.save_user(user_data)
         return user_data
@@ -122,34 +118,43 @@ class TestCalculator:
         assert "Cannot divide by zero" in str(exc_info.value)
 
     # Parametrized tests - run same test with different inputs
-    @pytest.mark.parametrize("a,b,expected", [
-        (2, 3, 5),
-        (0, 0, 0),
-        (-1, 1, 0),
-        (100, -50, 50),
-        (1.5, 2.5, 4.0),
-    ])
+    @pytest.mark.parametrize(
+        "a,b,expected",
+        [
+            (2, 3, 5),
+            (0, 0, 0),
+            (-1, 1, 0),
+            (100, -50, 50),
+            (1.5, 2.5, 4.0),
+        ],
+    )
     def test_add_parametrized(self, calc: Calculator, a: float, b: float, expected: float):
         """Test addition with multiple parameter sets."""
         result = calc.add(a, b)
         assert result == pytest.approx(expected)
 
-    @pytest.mark.parametrize("a,b,expected", [
-        (10, 2, 5.0),
-        (9, 3, 3.0),
-        (1, 2, 0.5),
-        (-10, 2, -5.0),
-    ])
+    @pytest.mark.parametrize(
+        "a,b,expected",
+        [
+            (10, 2, 5.0),
+            (9, 3, 3.0),
+            (1, 2, 0.5),
+            (-10, 2, -5.0),
+        ],
+    )
     def test_divide_parametrized(self, calc: Calculator, a: float, b: float, expected: float):
         """Test division with multiple parameter sets."""
         result = calc.divide(a, b)
         assert result == pytest.approx(expected)
 
-    @pytest.mark.parametrize("dividend,divisor", [
-        (10, 0),
-        (0, 0),
-        (-5, 0),
-    ])
+    @pytest.mark.parametrize(
+        "dividend,divisor",
+        [
+            (10, 0),
+            (0, 0),
+            (-5, 0),
+        ],
+    )
     def test_divide_by_zero_parametrized(self, calc: Calculator, dividend: float, divisor: float):
         """Test division by zero with multiple values."""
         with pytest.raises(ZeroDivisionError):
@@ -184,9 +189,9 @@ class TestUserManager:
         result = user_manager.create_user("alice", "alice@example.com")
 
         # Assert return value
-        assert result['username'] == "alice"
-        assert result['email'] == "alice@example.com"
-        assert 'created_at' in result
+        assert result["username"] == "alice"
+        assert result["email"] == "alice@example.com"
+        assert "created_at" in result
 
         # Assert database methods were called correctly
         mock_database.user_exists.assert_called_once_with("alice")
@@ -208,22 +213,19 @@ class TestUserManager:
     def test_get_user_found(self, user_manager: UserManager, mock_database: Mock):
         """Test getting existing user."""
         # Configure mock return value
-        expected_user = {
-            'username': 'alice',
-            'email': 'alice@example.com'
-        }
+        expected_user = {"username": "alice", "email": "alice@example.com"}
         mock_database.find_user.return_value = expected_user
 
-        result = user_manager.get_user('alice')
+        result = user_manager.get_user("alice")
 
         assert result == expected_user
-        mock_database.find_user.assert_called_once_with('alice')
+        mock_database.find_user.assert_called_once_with("alice")
 
     def test_get_user_not_found(self, user_manager: UserManager, mock_database: Mock):
         """Test getting non-existent user."""
         mock_database.find_user.return_value = None
 
-        result = user_manager.get_user('nonexistent')
+        result = user_manager.get_user("nonexistent")
 
         assert result is None
 
@@ -271,7 +273,7 @@ def test_read_file(sample_file: Path):
 
 
 # Patching examples
-@patch('datetime.datetime')
+@patch("datetime.datetime")
 def test_with_patched_datetime(mock_datetime):
     """Test with patched datetime."""
     # Configure mock
@@ -287,7 +289,7 @@ def test_with_patched_datetime(mock_datetime):
 # Test with context manager patching
 def test_with_context_manager_patch():
     """Test using patch as context manager."""
-    with patch('builtins.open', create=True) as mock_open:
+    with patch("builtins.open", create=True) as mock_open:
         mock_open.return_value.__enter__.return_value.read.return_value = "mocked content"
 
         # Code that uses open() would get mocked version
@@ -303,6 +305,7 @@ def test_slow_operation():
     """Test marked as slow (can be skipped with -m "not slow")."""
     # Simulate slow operation
     import time
+
     time.sleep(0.1)
     assert True
 
@@ -321,7 +324,7 @@ def test_future_feature():
 
 @pytest.mark.skipif(
     condition=True,  # Replace with actual condition
-    reason="Skipped on certain conditions"
+    reason="Skipped on certain conditions",
 )
 def test_conditional_skip():
     """Test skipped based on condition."""
@@ -337,8 +340,8 @@ def test_known_bug():
 # Custom assertions and helpers
 def assert_valid_email(email: str) -> None:
     """Custom assertion for email validation."""
-    assert '@' in email, f"Invalid email: {email}"
-    assert '.' in email.split('@')[1], f"Invalid email domain: {email}"
+    assert "@" in email, f"Invalid email: {email}"
+    assert "." in email.split("@")[1], f"Invalid email domain: {email}"
 
 
 def test_custom_assertion():
@@ -358,15 +361,11 @@ def test_parse_config_from_dict():
         debug: bool
 
     def parse_config(data: dict) -> Config:
-        return Config(
-            host=data['host'],
-            port=int(data['port']),
-            debug=data.get('debug', False)
-        )
+        return Config(host=data["host"], port=int(data["port"]), debug=data.get("debug", False))
 
     # Now test the implementation
-    result = parse_config({'host': 'localhost', 'port': '8080'})
-    assert result.host == 'localhost'
+    result = parse_config({"host": "localhost", "port": "8080"})
+    assert result.host == "localhost"
     assert result.port == 8080
     assert result.debug is False
 
@@ -375,25 +374,21 @@ def test_parse_config_from_dict():
 @pytest.fixture
 def user_data() -> dict[str, str]:
     """Provide test user data."""
-    return {
-        'username': 'testuser',
-        'email': 'test@example.com',
-        'password': 'secure123'
-    }
+    return {"username": "testuser", "email": "test@example.com", "password": "secure123"}
 
 
 @pytest.fixture
 def admin_user_data(user_data: dict[str, str]) -> dict[str, str]:
     """Provide admin user data (depends on user_data fixture)."""
     data = user_data.copy()
-    data['is_admin'] = True
+    data["is_admin"] = True
     return data
 
 
 def test_fixture_dependencies(admin_user_data: dict[str, str]):
     """Test using fixture that depends on another fixture."""
-    assert admin_user_data['username'] == 'testuser'
-    assert admin_user_data['is_admin'] is True
+    assert admin_user_data["username"] == "testuser"
+    assert admin_user_data["is_admin"] is True
 
 
 # Conftest.py patterns (typically in conftest.py file)

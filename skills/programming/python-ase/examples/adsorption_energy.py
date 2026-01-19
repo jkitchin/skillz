@@ -17,14 +17,14 @@ from ase import Atoms
 
 
 def calculate_adsorption_energy(
-    metal='Pt',
+    metal="Pt",
     surface_indices=(1, 1, 1),
-    adsorbate='O',
+    adsorbate="O",
     size=(4, 4, 4),
     vacuum=10.0,
     adsorption_height=2.0,
-    adsorption_site='fcc',
-    fmax=0.05
+    adsorption_site="fcc",
+    fmax=0.05,
 ):
     """
     Calculate the adsorption energy of an adsorbate on a metal surface.
@@ -54,9 +54,9 @@ def calculate_adsorption_energy(
         Dictionary containing energies and adsorption energy
     """
 
-    print("="*60)
+    print("=" * 60)
     print(f"Calculating adsorption of {adsorbate} on {metal}{surface_indices}")
-    print("="*60)
+    print("=" * 60)
 
     # Step 1: Create and optimize clean surface
     print("\n1. Optimizing clean surface...")
@@ -74,7 +74,7 @@ def calculate_adsorption_energy(
     slab.calc = EMT()
 
     # Optimize geometry
-    opt = BFGS(slab, trajectory='clean_surface.traj', logfile='clean_surface.log')
+    opt = BFGS(slab, trajectory="clean_surface.traj", logfile="clean_surface.log")
     opt.run(fmax=fmax)
 
     E_slab = slab.get_potential_energy()
@@ -85,12 +85,7 @@ def calculate_adsorption_energy(
     slab_with_ads = slab.copy()
 
     # Add adsorbate at specified site and height
-    add_adsorbate(
-        slab_with_ads,
-        adsorbate,
-        height=adsorption_height,
-        position=adsorption_site
-    )
+    add_adsorbate(slab_with_ads, adsorbate, height=adsorption_height, position=adsorption_site)
 
     # Keep the same constraints (fix bottom layers)
     slab_with_ads.set_constraint(FixAtoms(indices=fix_indices))
@@ -99,8 +94,8 @@ def calculate_adsorption_energy(
     # Optimize
     opt = BFGS(
         slab_with_ads,
-        trajectory='surface_with_adsorbate.traj',
-        logfile='surface_with_adsorbate.log'
+        trajectory="surface_with_adsorbate.traj",
+        logfile="surface_with_adsorbate.log",
     )
     opt.run(fmax=fmax)
 
@@ -111,19 +106,21 @@ def calculate_adsorption_energy(
     print(f"\n3. Calculating isolated {adsorbate} energy...")
 
     # Create isolated adsorbate in a box
-    if adsorbate == 'O':
+    if adsorbate == "O":
         # Atomic oxygen
         isolated = Atoms(adsorbate, positions=[(0, 0, 0)])
-    elif adsorbate == 'H':
+    elif adsorbate == "H":
         # Atomic hydrogen
         isolated = Atoms(adsorbate, positions=[(0, 0, 0)])
-    elif adsorbate == 'CO':
+    elif adsorbate == "CO":
         # CO molecule
         from ase.build import molecule
+
         isolated = molecule(adsorbate)
     else:
         # Try to build from molecule database
         from ase.build import molecule
+
         try:
             isolated = molecule(adsorbate)
         except:
@@ -136,7 +133,7 @@ def calculate_adsorption_energy(
 
     # For molecules, optimize; for atoms, just calculate energy
     if len(isolated) > 1:
-        opt = BFGS(isolated, trajectory='isolated_adsorbate.traj')
+        opt = BFGS(isolated, trajectory="isolated_adsorbate.traj")
         opt.run(fmax=fmax)
 
     E_ads_isolated = isolated.get_potential_energy()
@@ -146,9 +143,9 @@ def calculate_adsorption_energy(
     print("\n4. Calculating adsorption energy...")
     E_adsorption = E_slab_ads - E_slab - E_ads_isolated
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("RESULTS")
-    print("="*60)
+    print("=" * 60)
     print(f"E(surface + adsorbate) = {E_slab_ads:.3f} eV")
     print(f"E(surface)             = {E_slab:.3f} eV")
     print(f"E(adsorbate)           = {E_ads_isolated:.3f} eV")
@@ -160,24 +157,20 @@ def calculate_adsorption_energy(
     else:
         print(f"\nAdsorption is UNFAVORABLE (endothermic)")
 
-    print("="*60)
+    print("=" * 60)
 
     return {
-        'E_surface_with_adsorbate': E_slab_ads,
-        'E_surface': E_slab,
-        'E_adsorbate': E_ads_isolated,
-        'E_adsorption': E_adsorption
+        "E_surface_with_adsorbate": E_slab_ads,
+        "E_surface": E_slab,
+        "E_adsorbate": E_ads_isolated,
+        "E_adsorption": E_adsorption,
     }
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Example 1: Oxygen on Pt(111)
     results = calculate_adsorption_energy(
-        metal='Pt',
-        surface_indices=(1, 1, 1),
-        adsorbate='O',
-        size=(4, 4, 4),
-        adsorption_site='fcc'
+        metal="Pt", surface_indices=(1, 1, 1), adsorbate="O", size=(4, 4, 4), adsorption_site="fcc"
     )
 
     # Example 2: You can easily test different conditions
