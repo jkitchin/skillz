@@ -427,3 +427,174 @@ class HookValidator:
             return cls._parse_frontmatter(content)
         except Exception:
             return None
+
+
+class AgentValidator:
+    """Validator for agent files (subagents)."""
+
+    REQUIRED_FRONTMATTER_FIELDS = ["name", "description"]
+    OPTIONAL_FRONTMATTER_FIELDS = ["tools", "model", "disallowedTools"]
+
+    VALID_MODELS = {"sonnet", "opus", "haiku"}
+
+    VALID_TOOLS = {
+        "Bash",
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "Grep",
+        "Task",
+        "WebFetch",
+        "WebSearch",
+        "TodoWrite",
+        "AskUserQuestion",
+        "Skill",
+        "SlashCommand",
+        "NotebookEdit",
+        "BashOutput",
+        "KillShell",
+    }
+
+    @classmethod
+    def validate_agent_file(cls, agent_file: Path) -> Tuple[bool, List[str]]:
+        """
+        Validate an agent markdown file.
+
+        Args:
+            agent_file: Path to agent .md file
+
+        Returns:
+            Tuple of (is_valid, list_of_errors)
+        """
+        errors = []
+
+        # Check if file exists
+        if not agent_file.exists():
+            errors.append(f"File does not exist: {agent_file}")
+            return False, errors
+
+        if not agent_file.suffix == ".md":
+            errors.append(f"Agent file must be a .md file: {agent_file}")
+            return False, errors
+
+        try:
+            with open(agent_file) as f:
+                content = f.read()
+        except Exception as e:
+            errors.append(f"Error reading file: {e}")
+            return False, errors
+
+        # Parse frontmatter
+        frontmatter = cls._parse_frontmatter(content)
+        if frontmatter is None:
+            errors.append("Missing or invalid YAML frontmatter")
+            return False, errors
+
+        # Validate required fields
+        for field in cls.REQUIRED_FRONTMATTER_FIELDS:
+            if field not in frontmatter:
+                errors.append(f"Missing required field: {field}")
+
+        # Validate name
+        if "name" in frontmatter:
+            name = frontmatter["name"]
+            if not validate_name(name):
+                errors.append(
+                    f"Invalid name '{name}': must be lowercase with hyphens/numbers only, "
+                    f"max 64 chars"
+                )
+
+        # Validate description
+        if "description" in frontmatter:
+            desc = frontmatter["description"]
+            if not validate_description(desc):
+                errors.append("Description too long: max 1024 characters")
+
+        # Validate model
+        if "model" in frontmatter:
+            model = frontmatter["model"]
+            if model not in cls.VALID_MODELS:
+                errors.append(
+                    f"Invalid model '{model}': must be one of {sorted(cls.VALID_MODELS)}"
+                )
+
+        # Validate tools (can be string or list)
+        if "tools" in frontmatter:
+            tools = frontmatter["tools"]
+            if isinstance(tools, str):
+                # Parse comma-separated string
+                tool_list = [t.strip() for t in tools.split(",")]
+            elif isinstance(tools, list):
+                tool_list = tools
+            else:
+                tool_list = []
+                errors.append("tools must be a comma-separated string or list")
+
+            for tool in tool_list:
+                if tool and tool != "*" and tool not in cls.VALID_TOOLS:
+                    errors.append(f"Unknown tool: {tool}")
+
+        # Validate disallowedTools
+        if "disallowedTools" in frontmatter:
+            disallowed = frontmatter["disallowedTools"]
+            if isinstance(disallowed, str):
+                disallowed_list = [t.strip() for t in disallowed.split(",")]
+            elif isinstance(disallowed, list):
+                disallowed_list = disallowed
+            else:
+                disallowed_list = []
+                errors.append("disallowedTools must be a comma-separated string or list")
+
+            for tool in disallowed_list:
+                if tool and tool not in cls.VALID_TOOLS:
+                    errors.append(f"Unknown disallowed tool: {tool}")
+
+        # Check content is not empty (excluding frontmatter)
+        content_without_frontmatter = cls._remove_frontmatter(content)
+        if not content_without_frontmatter.strip():
+            errors.append("Agent content is empty (needs instructions after frontmatter)")
+
+        return len(errors) == 0, errors
+
+    @staticmethod
+    def _parse_frontmatter(content: str) -> Optional[Dict]:
+        """Parse YAML frontmatter from markdown content."""
+        pattern = r"^---\s*\n(.*?)\n---\s*\n"
+        match = re.match(pattern, content, re.DOTALL)
+
+        if not match:
+            return None
+
+        frontmatter_str = match.group(1)
+        try:
+            return yaml.safe_load(frontmatter_str)
+        except yaml.YAMLError:
+            return None
+
+    @staticmethod
+    def _remove_frontmatter(content: str) -> str:
+        """Remove frontmatter from content."""
+        pattern = r"^---\s*\n.*?\n---\s*\n"
+        return re.sub(pattern, "", content, count=1, flags=re.DOTALL)
+
+    @classmethod
+    def get_agent_metadata(cls, agent_file: Path) -> Optional[Dict]:
+        """
+        Extract metadata from an agent file.
+
+        Args:
+            agent_file: Path to agent .md file
+
+        Returns:
+            Dictionary of frontmatter or None if invalid
+        """
+        if not agent_file.exists():
+            return None
+
+        try:
+            with open(agent_file) as f:
+                content = f.read()
+            return cls._parse_frontmatter(content)
+        except Exception:
+            return None

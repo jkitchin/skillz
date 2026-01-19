@@ -73,10 +73,17 @@ Each hook is a directory containing:
 - `hook.py` or `hook.sh` - The executable hook script
 - Hooks are shell commands that execute at various points in Claude Code's lifecycle
 
+**Agents Repository (`agents/`)**
+Standalone markdown files for Claude Code subagents:
+- Each agent is a single `.md` file with YAML frontmatter (name, description, tools, model)
+- Agents are specialized AI assistants that handle specific tasks independently
+- They run in isolated context and return results to the main conversation
+
 **Templates (`templates/`)**
 - `SKILL_TEMPLATE.md` - Template for creating new skills
 - `COMMAND_TEMPLATE.md` - Template for creating new commands
 - `HOOK_TEMPLATE.md` - Template for creating new hooks
+- `AGENT_TEMPLATE.md` - Template for creating new agents
 
 ### Configuration Flow
 
@@ -154,6 +161,63 @@ skillz hooks create my-hook --event PostToolUse
 - **bash-logger**: Log all bash commands for audit (PreToolUse)
 - **notify-done**: Desktop notification when Claude needs input (Stop)
 
+## Agents CLI Commands
+
+The `skillz agents` command group manages Claude Code subagents:
+
+```bash
+# List available agents from repository
+skillz agents list --target repo
+
+# List installed agents
+skillz agents list --target personal
+
+# Install an agent
+skillz agents install code-reviewer
+
+# Uninstall an agent
+skillz agents uninstall code-reviewer
+
+# Get agent info
+skillz agents info code-reviewer
+
+# Search for agents
+skillz agents search "test"
+
+# Create a new agent from template
+skillz agents create my-agent --model sonnet
+
+# Create an agent using AI (Claude CLI)
+skillz agents create my-agent --prompt "An agent that analyzes code complexity"
+```
+
+### Available Agents
+
+- **code-reviewer**: Analyzes code for quality, security issues, and best practices
+- **debugger**: Traces issues through code, analyzes errors, suggests fixes
+- **literature-searcher**: Searches academic papers and technical resources
+- **test-writer**: Generates comprehensive test cases and suites
+- **doc-writer**: Creates documentation, READMEs, and API docs
+
+### Agents Validation
+
+Agents must have valid name (lowercase, hyphens, max 64 chars), description (max 1024 chars), valid model (sonnet/opus/haiku), and valid tools list.
+
+## AI-Assisted Creation
+
+All three types support AI-assisted creation using the Claude CLI:
+
+```bash
+# Create a skill using AI
+skillz create --type skill --name my-skill --prompt "A skill for analyzing Python code style"
+
+# Create a hook using AI
+skillz hooks create my-hook --event PostToolUse --prompt "Format Python files with black"
+
+# Create an agent using AI
+skillz agents create my-agent --prompt "An agent that reviews security vulnerabilities"
+```
+
 ## Common Patterns
 
 **Adding a new CLI command**: Create file in `cli/commands/`, implement as Click command, import and register in `cli/main.py`.
@@ -162,7 +226,9 @@ skillz hooks create my-hook --event PostToolUse
 
 **Creating a hook**: Use `skillz hooks create my-hook` or manually create directory with HOOK.md and hook.py.
 
-**Validation errors**: SkillValidator, CommandValidator, and HookValidator all return `(is_valid, list_of_errors)` tuples.
+**Creating an agent**: Use `skillz agents create my-agent` or manually create .md file with proper frontmatter.
+
+**Validation errors**: SkillValidator, CommandValidator, HookValidator, and AgentValidator all return `(is_valid, list_of_errors)` tuples.
 
 ## Git Policy
 

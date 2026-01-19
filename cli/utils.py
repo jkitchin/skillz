@@ -157,3 +157,26 @@ def find_hook_directories(base_path: Path) -> List[Path]:
         hooks.append(item.parent)
 
     return sorted(hooks)
+
+
+def find_agent_files(base_path: Path) -> List[Path]:
+    """
+    Find all agent files (*.md) in a base path.
+
+    Args:
+        base_path: Base directory to search
+
+    Returns:
+        List of paths to agent files
+    """
+    agents = []
+    if not base_path.exists():
+        return agents
+
+    for item in base_path.rglob("*.md"):
+        # Skip template files and READMEs
+        if item.name.upper() in ("README.MD", "TEMPLATE.MD"):
+            continue
+        agents.append(item)
+
+    return sorted(agents)

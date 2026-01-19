@@ -3,8 +3,9 @@
 import json
 import os
 import shutil
+import subprocess
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import click
 from rich.console import Console
@@ -376,9 +377,17 @@ def search(ctx, query):
     default="PostToolUse",
     help="Hook event type",
 )
+@click.option(
+    "--prompt",
+    help="Description prompt - use Claude to generate hook content",
+)
 @click.pass_context
-def create(ctx, name, target, platform, event):
-    """Create a new hook from template."""
+def create(ctx, name, target, platform, event, prompt):
+    """Create a new hook from template or AI-generated.
+
+    If --prompt is provided, uses Claude CLI to generate the hook content
+    based on your description.
+    """
     config = Config()
 
     hooks_dir = config.get_hooks_dir(target, platform)
@@ -391,8 +400,17 @@ def create(ctx, name, target, platform, event):
     # Create hook directory
     hook_path.mkdir(parents=True, exist_ok=True)
 
-    # Create HOOK.md
-    hook_md_content = f"""---
+    if prompt:
+        # Use Claude to generate the hook
+        hook_md, hook_script = _generate_hook_with_claude(name, prompt, event)
+        if not hook_md or not hook_script:
+            console.print("[red]Failed to generate hook with Claude[/red]")
+            # Clean up empty directory
+            hook_path.rmdir()
+            raise click.Abort()
+    else:
+        # Create from template
+        hook_md = f"""---
 name: {name}
 description: Description of what this hook does
 event: {event}
@@ -415,10 +433,7 @@ timeout: 60
 
 - Python 3.8+
 """
-    (hook_path / "HOOK.md").write_text(hook_md_content)
-
-    # Create hook script
-    hook_script = f'''#!/usr/bin/env python3
+        hook_script = f'''#!/usr/bin/env python3
 """{name} hook for Claude Code."""
 
 import json
@@ -452,6 +467,8 @@ def main():
 if __name__ == "__main__":
     main()
 '''
+
+    (hook_path / "HOOK.md").write_text(hook_md)
     script_path = hook_path / "hook.py"
     script_path.write_text(hook_script)
     os.chmod(script_path, 0o755)
@@ -460,8 +477,9 @@ if __name__ == "__main__":
     console.print(f"\nFiles created:")
     console.print(f"  - {hook_path / 'HOOK.md'}")
     console.print(f"  - {hook_path / 'hook.py'}")
-    console.print(f"\n[dim]Edit these files, then run:[/dim]")
-    console.print(f"  skillz hooks install {name} --target {target}")
+    if not prompt:
+        console.print(f"\n[dim]Edit these files, then run:[/dim]")
+        console.print(f"  skillz hooks install {name} --target {target}")
 
 
 # Helper functions
@@ -608,3 +626,73 @@ def _remove_hook_from_settings(settings_file: Path, hook_path: Path, metadata: D
     # Save settings
     with open(settings_file, "w") as f:
         json.dump(settings, f, indent=2)
+
+
+def _generate_hook_with_claude(name: str, prompt: str, event: str) -> Tuple[Optional[str], Optional[str]]:
+    """Use Claude CLI to generate hook content."""
+    generation_prompt = f"""Generate a Claude Code hook for the following:
+
+Name: {name}
+Event: {event}
+Description/Purpose: {prompt}
+
+Create TWO files:
+
+1. HOOK.md - A markdown file with:
+   - YAML frontmatter (name, description, event, matcher, type, timeout)
+   - Documentation of what the hook does
+   - Requirements section
+
+2. hook.py - A Python script that:
+   - Reads JSON input from stdin
+   - Implements the hook logic based on the description
+   - Uses appropriate exit codes (0=success, 2=block)
+
+Output format - provide BOTH files separated by this exact marker:
+===HOOK_SCRIPT===
+
+Start with the HOOK.md content (beginning with ---), then the marker, then the Python script.
+Do not include any explanation, just the file contents."""
+
+    try:
+        result = subprocess.run(
+            ["claude", "-p", generation_prompt],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+
+        if result.returncode == 0 and result.stdout.strip():
+            output = result.stdout.strip()
+
+            # Split into HOOK.md and hook.py
+            if "===HOOK_SCRIPT===" in output:
+                parts = output.split("===HOOK_SCRIPT===")
+                hook_md = parts[0].strip()
+                hook_script = parts[1].strip() if len(parts) > 1 else None
+
+                # Ensure HOOK.md starts with frontmatter
+                if not hook_md.startswith("---"):
+                    hook_md = "---\n" + hook_md
+
+                # Ensure hook.py has shebang
+                if hook_script and not hook_script.startswith("#!"):
+                    hook_script = "#!/usr/bin/env python3\n" + hook_script
+
+                return hook_md, hook_script
+            else:
+                console.print("[yellow]Could not parse Claude output[/yellow]")
+                return None, None
+        else:
+            console.print(f"[yellow]Claude CLI error: {result.stderr}[/yellow]")
+            return None, None
+
+    except FileNotFoundError:
+        console.print("[yellow]Claude CLI not found. Install it or create hook manually.[/yellow]")
+        return None, None
+    except subprocess.TimeoutExpired:
+        console.print("[yellow]Claude CLI timed out[/yellow]")
+        return None, None
+    except Exception as e:
+        console.print(f"[yellow]Error running Claude CLI: {e}[/yellow]")
+        return None, None
