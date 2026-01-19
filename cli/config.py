@@ -13,8 +13,10 @@ class Config:
     DEFAULT_CONFIG = {
         "personal_skills_dir": "~/.claude/skills",
         "personal_commands_dir": "~/.claude/commands",
+        "personal_hooks_dir": "~/.claude/hooks",
         "project_skills_dir": ".claude/skills",
         "project_commands_dir": ".claude/commands",
+        "project_hooks_dir": ".claude/hooks",
         "repository_path": None,  # Path to the local clone of skills repository
         "default_target": "personal",  # personal or project
         "default_platform": "claude",  # Default platform: claude, opencode, codex, gemini
@@ -22,18 +24,26 @@ class Config:
             "claude": {
                 "skills_dir": "~/.claude/skills",
                 "commands_dir": "~/.claude/commands",
+                "hooks_dir": "~/.claude/hooks",
+                "settings_file": "~/.claude/settings.json",
             },
             "opencode": {
                 "skills_dir": "~/.config/opencode/skills",
                 "commands_dir": "~/.config/opencode/command",
+                "hooks_dir": "~/.config/opencode/hooks",
+                "settings_file": "~/.config/opencode/settings.json",
             },
             "codex": {
                 "skills_dir": "~/.codex/skills",
                 "commands_dir": "~/.codex/commands",
+                "hooks_dir": "~/.codex/hooks",
+                "settings_file": "~/.codex/settings.json",
             },
             "gemini": {
                 "skills_dir": "~/.config/gemini/skills",
                 "commands_dir": "~/.config/gemini/commands",
+                "hooks_dir": "~/.config/gemini/hooks",
+                "settings_file": "~/.config/gemini/settings.json",
             },
         },
     }
@@ -109,3 +119,31 @@ class Config:
         """Set the repository path."""
         self.config["repository_path"] = str(path)
         self.save_config()
+
+    def get_hooks_dir(self, target: str = "personal", platform: str = "claude") -> Path:
+        """Get the hooks directory for a given target and platform."""
+        if target == "personal":
+            if platform in self.config["platforms"]:
+                path = self.config["platforms"][platform].get(
+                    "hooks_dir", self.config.get("personal_hooks_dir", "~/.claude/hooks")
+                )
+            else:
+                path = self.config.get("personal_hooks_dir", "~/.claude/hooks")
+        else:  # project
+            path = self.config.get("project_hooks_dir", ".claude/hooks")
+
+        return Path(os.path.expanduser(path))
+
+    def get_settings_file(self, target: str = "personal", platform: str = "claude") -> Path:
+        """Get the settings.json file path for a given target and platform."""
+        if target == "personal":
+            if platform in self.config["platforms"]:
+                path = self.config["platforms"][platform].get(
+                    "settings_file", "~/.claude/settings.json"
+                )
+            else:
+                path = "~/.claude/settings.json"
+        else:  # project
+            path = ".claude/settings.json"
+
+        return Path(os.path.expanduser(path))
