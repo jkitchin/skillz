@@ -36,14 +36,13 @@ Commands:
 Environment Variables:
     LITDB_TS_DIR      Project directory (default: ~/litdb-ts)
     MAX_ITERATIONS    Max iterations for build mode (default: unlimited)
-    ANTHROPIC_API_KEY Required for running Ralph
+    ANTHROPIC_API_KEY Optional - only if not using Claude Code subscription
 
 Example Workflow:
     1. ./run-example.sh init
     2. cd ~/litdb-ts
     3. ./run-example.sh deps
-    4. export ANTHROPIC_API_KEY=your-key
-    5. ./run-example.sh build
+    4. ./run-example.sh build
 EOF
 }
 
@@ -225,24 +224,12 @@ cmd_deps() {
 cmd_plan() {
     echo -e "${BLUE}Running Ralph in planning mode...${NC}"
     cd "$PROJECT_DIR"
-
-    if [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
-        echo "Error: ANTHROPIC_API_KEY not set"
-        exit 1
-    fi
-
     ./ralph-sandbox.sh . 5 plan
 }
 
 cmd_build() {
     echo -e "${BLUE}Running Ralph in build mode...${NC}"
     cd "$PROJECT_DIR"
-
-    if [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
-        echo "Error: ANTHROPIC_API_KEY not set"
-        exit 1
-    fi
-
     ./ralph-sandbox.sh . "$MAX_ITERATIONS" build
 }
 

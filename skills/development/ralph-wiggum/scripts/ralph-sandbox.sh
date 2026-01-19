@@ -9,7 +9,7 @@
 #   mode           - "build" or "plan" (default: build)
 #
 # Environment variables:
-#   ANTHROPIC_API_KEY  - Required: API key for Claude
+#   ANTHROPIC_API_KEY  - Optional: Only needed if not using Claude Code subscription
 #   RALPH_MODEL        - Optional: Model to use (default: sonnet)
 
 set -euo pipefail
@@ -26,15 +26,6 @@ NC='\033[0m'
 
 echo -e "${BLUE}Ralph Sandbox Launcher${NC}"
 echo ""
-
-# Check for API key
-if [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
-    echo -e "${RED}Error: ANTHROPIC_API_KEY environment variable not set${NC}"
-    echo ""
-    echo "Set your API key:"
-    echo "  export ANTHROPIC_API_KEY=your-key-here"
-    exit 1
-fi
 
 # Check project directory
 if [[ ! -d "$PROJECT_DIR" ]]; then
@@ -109,18 +100,27 @@ echo "   Memory limit: 4GB"
 echo "   CPU limit: 2 cores"
 echo ""
 
+# Build docker run arguments
+DOCKER_ARGS=(
+    --rm -it
+    --name "ralph-$(date +%s)"
+    --network none
+    --memory 4g
+    --cpus 2
+    --pids-limit 100
+    --cap-drop ALL
+    --security-opt no-new-privileges:true
+    -v "$PROJECT_DIR:/workspace"
+    -e "RALPH_MODEL=${RALPH_MODEL:-sonnet}"
+)
+
+# Pass API key if set (optional - Claude Code subscription doesn't need it)
+if [[ -n "${ANTHROPIC_API_KEY:-}" ]]; then
+    DOCKER_ARGS+=(-e "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY")
+fi
+
 # Run in sandbox
-docker run --rm -it \
-    --name "ralph-$(date +%s)" \
-    --network none \
-    --memory 4g \
-    --cpus 2 \
-    --pids-limit 100 \
-    --cap-drop ALL \
-    --security-opt no-new-privileges:true \
-    -v "$PROJECT_DIR:/workspace" \
-    -e "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" \
-    -e "RALPH_MODEL=${RALPH_MODEL:-sonnet}" \
+docker run "${DOCKER_ARGS[@]}" \
     "$IMAGE_NAME" \
     ./ralph.sh "$MODE" "$MAX_ITERATIONS"
 

@@ -66,10 +66,14 @@ cp ~/.claude/skills/ralph-wiggum/examples/litdb-typescript/RALPH_PROMPT.md .
 cp ~/.claude/skills/ralph-wiggum/examples/litdb-typescript/Dockerfile.ralph .
 ```
 
-### Step 4: Set Up API Key
+### Step 4: Verify Claude Code Authentication
 
 ```bash
-export ANTHROPIC_API_KEY=your-key-here
+# Claude Code subscription users - already authenticated!
+claude --version
+
+# API key users (alternative) - set this only if not using subscription
+# export ANTHROPIC_API_KEY=your-key-here
 ```
 
 ### Step 5: Run Ralph
@@ -138,12 +142,13 @@ This is ideal for an overnight run. Start Ralph at 6 PM, wake up to a working Ty
 
 ## Cost Estimation
 
-Rough estimate with Claude Sonnet:
+**Claude Code Subscription:** Included in your subscription - no per-token costs!
+
+**API Key Users:** Rough estimate with Claude Sonnet:
 - ~100 iterations
 - ~50k input tokens + ~20k output tokens per iteration
 - Cost: ~$20-40 total
-
-Set `RALPH_COST_LIMIT=50` to cap spending.
+- Set `RALPH_COST_LIMIT=50` to cap spending
 
 ## Customization
 
