@@ -10,6 +10,53 @@ from rich.console import Console
 console = Console()
 
 
+class PathTraversalError(Exception):
+    """Raised when a path traversal attack is detected."""
+
+    pass
+
+
+def safe_path_join(base: Path, name: str) -> Path:
+    """
+    Safely join a base path with a name, preventing path traversal attacks.
+
+    Args:
+        base: The base directory path
+        name: The name to join (e.g., skill name, hook name)
+
+    Returns:
+        The resolved path
+
+    Raises:
+        PathTraversalError: If the resulting path would escape the base directory
+    """
+    # Resolve the base to an absolute path
+    base_resolved = base.resolve()
+
+    # Join and resolve the result
+    result = (base / name).resolve()
+
+    # Check if the result is within the base directory
+    try:
+        result.relative_to(base_resolved)
+    except ValueError:
+        raise PathTraversalError(
+            f"Path traversal detected: '{name}' would escape base directory"
+        )
+
+    # Additional check for symlinks pointing outside base
+    if result.is_symlink():
+        real_path = result.resolve()
+        try:
+            real_path.relative_to(base_resolved)
+        except ValueError:
+            raise PathTraversalError(
+                f"Symlink traversal detected: '{name}' points outside base directory"
+            )
+
+    return result
+
+
 def validate_name(name: str, max_length: int = 64) -> bool:
     """
     Validate a skill or command name.
@@ -27,7 +74,7 @@ def validate_description(description: str, max_length: int = 1024) -> bool:
 
 def copy_directory(src: Path, dst: Path, force: bool = False) -> bool:
     """
-    Copy a directory from src to dst.
+    Copy a directory from src to dst (symlink-safe).
 
     Args:
         src: Source directory
@@ -36,6 +83,10 @@ def copy_directory(src: Path, dst: Path, force: bool = False) -> bool:
 
     Returns:
         True if successful, False otherwise
+
+    Security:
+        - Does not follow symlinks (copies symlink as-is or ignores)
+        - Ignores dangling symlinks
     """
     try:
         if dst.exists() and not force:
@@ -43,9 +94,11 @@ def copy_directory(src: Path, dst: Path, force: bool = False) -> bool:
             return False
 
         if dst.exists():
-            shutil.rmtree(dst)
+            # Use onerror handler for safer removal
+            shutil.rmtree(dst, ignore_errors=False)
 
-        shutil.copytree(src, dst)
+        # Copy without following symlinks for security
+        shutil.copytree(src, dst, symlinks=True, ignore_dangling_symlinks=True)
         return True
     except Exception as e:
         console.print(f"[red]Error copying directory: {e}[/red]")

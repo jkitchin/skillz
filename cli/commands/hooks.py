@@ -11,8 +11,14 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from cli.config import Config
-from cli.utils import confirm_action, copy_directory, find_hook_directories
+from cli.config import Config, InvalidPlatformError, validate_platform
+from cli.utils import (
+    PathTraversalError,
+    confirm_action,
+    copy_directory,
+    find_hook_directories,
+    safe_path_join,
+)
 from cli.validator import HookValidator
 
 console = Console()
@@ -109,11 +115,19 @@ def list_hooks(ctx, target, platform):
 )
 @click.option("--force", "-f", is_flag=True, help="Overwrite existing hook")
 @click.option("--dry-run", is_flag=True, help="Preview without making changes")
+@click.option("--yes", "-y", is_flag=True, help="Skip script preview confirmation")
 @click.pass_context
-def install(ctx, name, target, platform, force, dry_run):
+def install(ctx, name, target, platform, force, dry_run, yes):
     """Install a hook from the repository."""
     config = Config()
     verbose = ctx.obj.get("verbose", False) if ctx.obj else False
+
+    # Validate platform (security: prevent arbitrary paths)
+    try:
+        platform = validate_platform(platform)
+    except InvalidPlatformError as e:
+        console.print(f"[red]Error: {e}[/red]")
+        raise click.Abort()
 
     # Get repository path
     repo_path = config.get_repository_path()
@@ -142,13 +156,38 @@ def install(ctx, name, target, platform, force, dry_run):
         console.print("[red]Error: Could not read hook metadata[/red]")
         raise click.Abort()
 
-    # Get destination
+    # Get destination using safe_path_join (security: prevent path traversal)
     dest_dir = config.get_hooks_dir(target, platform)
-    dest_path = dest_dir / name
+    try:
+        dest_path = safe_path_join(dest_dir, name)
+    except PathTraversalError as e:
+        console.print(f"[red]Security error: {e}[/red]")
+        raise click.Abort()
 
     if verbose:
         console.print(f"Source: {source_path}")
         console.print(f"Destination: {dest_path}")
+
+    # Security: Show script preview before installation
+    if not yes and not dry_run:
+        console.print("\n[bold yellow]⚠ Hook Script Preview[/bold yellow]")
+        console.print("[dim]Hooks execute with your user privileges. Review before installing.[/dim]\n")
+
+        # Show script contents
+        for script in list(source_path.glob("*.py")) + list(source_path.glob("*.sh")):
+            console.print(f"[bold cyan]── {script.name} ──[/bold cyan]")
+            content = script.read_text()
+            # Show first 50 lines or entire file if smaller
+            lines = content.split("\n")
+            preview_lines = lines[:50]
+            console.print("\n".join(preview_lines))
+            if len(lines) > 50:
+                console.print(f"[dim]... ({len(lines) - 50} more lines)[/dim]")
+            console.print()
+
+        if not confirm_action("Install this hook?", default=False):
+            console.print("[yellow]Installation cancelled[/yellow]")
+            return
 
     # Check if already exists
     if dest_path.exists() and not force:
