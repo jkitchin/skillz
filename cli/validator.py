@@ -362,9 +362,7 @@ class HookValidator:
         if "event" in frontmatter:
             event = frontmatter["event"]
             if event not in cls.VALID_EVENTS:
-                errors.append(
-                    f"Invalid event '{event}': must be one of {sorted(cls.VALID_EVENTS)}"
-                )
+                errors.append(f"Invalid event '{event}': must be one of {sorted(cls.VALID_EVENTS)}")
 
         # Validate type (optional, defaults to "command")
         if "type" in frontmatter:
@@ -515,9 +513,7 @@ class AgentValidator:
         if "model" in frontmatter:
             model = frontmatter["model"]
             if model not in cls.VALID_MODELS:
-                errors.append(
-                    f"Invalid model '{model}': must be one of {sorted(cls.VALID_MODELS)}"
-                )
+                errors.append(f"Invalid model '{model}': must be one of {sorted(cls.VALID_MODELS)}")
 
         # Validate tools (can be string or list)
         if "tools" in frontmatter:

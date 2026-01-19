@@ -71,7 +71,7 @@ def send_notification(title: str, message: str):
     if system == "linux":
         # Check if running in WSL
         try:
-            with open("/proc/version", "r") as f:
+            with open("/proc/version") as f:
                 if "microsoft" in f.read().lower():
                     if send_windows_notification(title, message):
                         return True

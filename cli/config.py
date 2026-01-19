@@ -6,7 +6,6 @@ from typing import Dict, Optional
 
 import yaml
 
-
 # Hardcoded whitelist of valid platforms for security
 VALID_PLATFORMS = {"claude", "opencode", "codex", "gemini"}
 

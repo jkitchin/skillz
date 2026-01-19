@@ -1,7 +1,5 @@
 """Tests for agents functionality."""
 
-from pathlib import Path
-
 import pytest
 
 from cli.validator import AgentValidator

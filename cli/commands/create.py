@@ -2,7 +2,7 @@
 
 import subprocess
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 
 import click
 from rich.console import Console
@@ -174,7 +174,8 @@ You can use:
 
 def _generate_skill_with_claude(name: str, prompt: str) -> Optional[str]:
     """Generate skill content using Claude CLI."""
-    generation_prompt = f"""Generate a SKILL.md file for a Claude Code skill with the following requirements:
+    generation_prompt = f"""Generate a SKILL.md file for a Claude Code skill \
+with the following requirements:
 
 Name: {name}
 Description/Purpose: {prompt}
@@ -217,7 +218,8 @@ Output ONLY the SKILL.md content, no explanations or markdown code blocks."""
 
 def _generate_command_with_claude(name: str, prompt: str) -> Optional[str]:
     """Generate command content using Claude CLI."""
-    generation_prompt = f"""Generate a command markdown file for a Claude Code slash command with the following requirements:
+    generation_prompt = f"""Generate a command markdown file for a Claude Code \
+slash command with the following requirements:
 
 Name: {name}
 Description/Purpose: {prompt}

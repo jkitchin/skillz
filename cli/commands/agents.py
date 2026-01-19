@@ -281,7 +281,7 @@ def info(ctx, name, target, platform):
         console.print(f"\n[green]Description:[/green]\n{metadata.get('description', '-')}")
 
     if not valid:
-        console.print(f"\n[red]Validation errors:[/red]")
+        console.print("\n[red]Validation errors:[/red]")
         for error in errors:
             console.print(f"  - {error}")
 
@@ -420,7 +420,7 @@ tools: {tools}
 model: {model}
 ---
 
-# {name.replace('-', ' ').title()}
+# {name.replace("-", " ").title()}
 
 You are a specialized agent for [purpose].
 
@@ -447,7 +447,7 @@ Provide results in the following format:
 
     console.print(f"[green]Created agent '{name}' at {agent_file}[/green]")
     if not prompt:
-        console.print(f"\n[dim]Edit the file to customize the agent, then install it:[/dim]")
+        console.print("\n[dim]Edit the file to customize the agent, then install it:[/dim]")
         console.print(f"  skillz agents install {name} --target {target}")
 
 

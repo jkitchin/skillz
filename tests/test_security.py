@@ -1,10 +1,9 @@
 """Security tests for skillz."""
 
 import pytest
-from pathlib import Path
 
-from cli.utils import safe_path_join, PathTraversalError
-from cli.config import validate_platform, InvalidPlatformError, VALID_PLATFORMS
+from cli.config import VALID_PLATFORMS, InvalidPlatformError, validate_platform
+from cli.utils import PathTraversalError, safe_path_join
 
 
 class TestSafePathJoin:
@@ -13,14 +12,16 @@ class TestSafePathJoin:
     def test_safe_path_normal(self, temp_dir):
         """Test safe_path_join with normal path."""
         result = safe_path_join(temp_dir, "my-skill")
-        assert result == temp_dir / "my-skill"
+        # Use resolve() to handle macOS /var -> /private/var symlink
+        assert result == temp_dir.resolve() / "my-skill"
 
     def test_safe_path_with_subdirectory(self, temp_dir):
         """Test safe_path_join with nested path."""
         subdir = temp_dir / "skills"
         subdir.mkdir()
         result = safe_path_join(subdir, "test-skill")
-        assert result == subdir / "test-skill"
+        # Use resolve() to handle macOS /var -> /private/var symlink
+        assert result == subdir.resolve() / "test-skill"
 
     def test_path_traversal_dotdot(self, temp_dir):
         """Test that .. path traversal is blocked."""
@@ -44,7 +45,8 @@ class TestSafePathJoin:
         # Note: %2e%2e is URL-encoded .. but won't decode in filesystem
         # This tests that literal strings with unusual chars are handled
         result = safe_path_join(temp_dir, "normal-skill")
-        assert result.parent == temp_dir
+        # Use resolve() to handle macOS /var -> /private/var symlink
+        assert result.parent == temp_dir.resolve()
 
 
 class TestValidatePlatform:
@@ -114,22 +116,26 @@ class TestInputValidation:
         # Null bytes in filenames are generally not allowed
         # This tests robustness of the validation
         from cli.utils import validate_name
+
         assert not validate_name("skill\x00name")
 
     def test_name_with_newline(self):
         """Test names with newlines are rejected."""
         from cli.utils import validate_name
+
         assert not validate_name("skill\nname")
 
     def test_name_with_unicode(self):
         """Test names with unicode are rejected (lowercase-hyphens only)."""
         from cli.utils import validate_name
+
         assert not validate_name("skíll-name")
         assert not validate_name("skill-名前")
 
     def test_valid_name_patterns(self):
         """Test valid name patterns are accepted."""
         from cli.utils import validate_name
+
         assert validate_name("my-skill")
         assert validate_name("skill123")
         assert validate_name("a-b-c-1-2-3")
@@ -138,6 +144,7 @@ class TestInputValidation:
     def test_invalid_name_patterns(self):
         """Test invalid name patterns are rejected."""
         from cli.utils import validate_name
+
         assert not validate_name("My-Skill")  # uppercase
         assert not validate_name("my skill")  # space
         assert not validate_name("my_skill")  # underscore

@@ -5,7 +5,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import click
 from rich.console import Console
@@ -171,7 +171,9 @@ def install(ctx, name, target, platform, force, dry_run, yes):
     # Security: Show script preview before installation
     if not yes and not dry_run:
         console.print("\n[bold yellow]⚠ Hook Script Preview[/bold yellow]")
-        console.print("[dim]Hooks execute with your user privileges. Review before installing.[/dim]\n")
+        console.print(
+            "[dim]Hooks execute with your user privileges. Review before installing.[/dim]\n"
+        )
 
         # Show script contents
         for script in list(source_path.glob("*.py")) + list(source_path.glob("*.sh")):
@@ -198,7 +200,7 @@ def install(ctx, name, target, platform, force, dry_run, yes):
     # Dry run
     if dry_run:
         console.print(f"[blue]Would install hook '{name}' to {dest_path}[/blue]")
-        console.print(f"[blue]Would update settings.json with hook configuration[/blue]")
+        console.print("[blue]Would update settings.json with hook configuration[/blue]")
         return
 
     # Install hook files
@@ -319,13 +321,13 @@ def info(ctx, name, target, platform):
         console.print(f"\n[green]Description:[/green]\n{metadata.get('description', '-')}")
 
     # List files
-    console.print(f"\n[green]Files:[/green]")
+    console.print("\n[green]Files:[/green]")
     for f in sorted(hook_path.iterdir()):
         if f.is_file():
             console.print(f"  - {f.name}")
 
     if not valid:
-        console.print(f"\n[red]Validation errors:[/red]")
+        console.print("\n[red]Validation errors:[/red]")
         for error in errors:
             console.print(f"  - {error}")
 
@@ -458,7 +460,7 @@ type: command
 timeout: 60
 ---
 
-# {name.replace('-', ' ').title()}
+# {name.replace("-", " ").title()}
 
 ## Purpose
 
@@ -513,11 +515,11 @@ if __name__ == "__main__":
     os.chmod(script_path, 0o755)
 
     console.print(f"[green]Created hook '{name}' at {hook_path}[/green]")
-    console.print(f"\nFiles created:")
+    console.print("\nFiles created:")
     console.print(f"  - {hook_path / 'HOOK.md'}")
     console.print(f"  - {hook_path / 'hook.py'}")
     if not prompt:
-        console.print(f"\n[dim]Edit these files, then run:[/dim]")
+        console.print("\n[dim]Edit these files, then run:[/dim]")
         console.print(f"  skillz hooks install {name} --target {target}")
 
 
@@ -667,7 +669,9 @@ def _remove_hook_from_settings(settings_file: Path, hook_path: Path, metadata: D
         json.dump(settings, f, indent=2)
 
 
-def _generate_hook_with_claude(name: str, prompt: str, event: str) -> Tuple[Optional[str], Optional[str]]:
+def _generate_hook_with_claude(
+    name: str, prompt: str, event: str
+) -> Tuple[Optional[str], Optional[str]]:
     """Use Claude CLI to generate hook content."""
     generation_prompt = f"""Generate a Claude Code hook for the following:
 

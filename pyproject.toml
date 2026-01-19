@@ -74,6 +74,8 @@ ignore = []
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+# Hooks contain embedded scripts (PowerShell, etc.) with long lines
+"hooks/**/hook.py" = ["E501"]
 
 [tool.coverage.run]
 source = ["cli"]

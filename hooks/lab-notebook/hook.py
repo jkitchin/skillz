@@ -116,7 +116,9 @@ def get_git_info(cwd: str) -> Optional[Dict[str, str]]:
             capture_output=True,
             text=True,
         )
-        uncommitted = len(status_result.stdout.strip().split("\n")) if status_result.stdout.strip() else 0
+        uncommitted = (
+            len(status_result.stdout.strip().split("\n")) if status_result.stdout.strip() else 0
+        )
 
         # Get last commit
         log_result = subprocess.run(
@@ -210,20 +212,24 @@ def generate_markdown(
 
     # Git status
     if git_info:
-        lines.extend([
-            "## Git Status",
-            "",
-            f"- **Branch**: {git_info['branch']}",
-            f"- **Uncommitted changes**: {git_info['uncommitted_files']} files",
-        ])
+        lines.extend(
+            [
+                "## Git Status",
+                "",
+                f"- **Branch**: {git_info['branch']}",
+                f"- **Uncommitted changes**: {git_info['uncommitted_files']} files",
+            ]
+        )
         if git_info["last_commit"]:
             lines.append(f"- **Last commit**: {git_info['last_commit']}")
         lines.append("")
 
-    lines.extend([
-        "---",
-        f"_Generated automatically by lab-notebook hook at {date_str}_",
-    ])
+    lines.extend(
+        [
+            "---",
+            f"_Generated automatically by lab-notebook hook at {date_str}_",
+        ]
+    )
 
     return "\n".join(lines)
 
@@ -263,8 +269,11 @@ def generate_org(
     date_str = now.strftime("%Y-%m-%d %H:%M")
     org_date = now.strftime("[%Y-%m-%d %a %H:%M]")
 
+    # Build title from first prompt (truncated) or default
+    prompts = session_data["user_prompts"]
+    title = prompts[0][:50] if prompts else "Session"
     lines = [
-        f"* {date_str} Claude Session: {session_data['user_prompts'][0][:50] if session_data['user_prompts'] else 'Session'}",
+        f"* {date_str} Claude Session: {title}",
         ":PROPERTIES:",
         f":SESSION_ID: {session_id}",
         f":PROJECT: {cwd}",

@@ -40,9 +40,7 @@ def safe_path_join(base: Path, name: str) -> Path:
     try:
         result.relative_to(base_resolved)
     except ValueError:
-        raise PathTraversalError(
-            f"Path traversal detected: '{name}' would escape base directory"
-        )
+        raise PathTraversalError(f"Path traversal detected: '{name}' would escape base directory")
 
     # Additional check for symlinks pointing outside base
     if result.is_symlink():

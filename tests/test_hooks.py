@@ -1,8 +1,5 @@
 """Tests for hooks functionality."""
 
-import json
-from pathlib import Path
-
 import pytest
 
 from cli.validator import HookValidator
