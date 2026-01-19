@@ -63,3 +63,4 @@ Thumbs.db
 README.org
 PLAN.md
 examples/
+!skills/**/examples/
