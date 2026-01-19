@@ -7,6 +7,37 @@ from typing import Dict, Optional
 import yaml
 
 
+# Hardcoded whitelist of valid platforms for security
+VALID_PLATFORMS = {"claude", "opencode", "codex", "gemini"}
+
+
+class InvalidPlatformError(Exception):
+    """Raised when an invalid platform is specified."""
+
+    pass
+
+
+def validate_platform(platform: str) -> str:
+    """
+    Validate that a platform is in the allowed whitelist.
+
+    Args:
+        platform: The platform name to validate
+
+    Returns:
+        The validated platform name (lowercase)
+
+    Raises:
+        InvalidPlatformError: If the platform is not in the whitelist
+    """
+    platform_lower = platform.lower()
+    if platform_lower not in VALID_PLATFORMS:
+        raise InvalidPlatformError(
+            f"Invalid platform '{platform}'. Must be one of: {', '.join(sorted(VALID_PLATFORMS))}"
+        )
+    return platform_lower
+
+
 class Config:
     """Configuration manager for skillz."""
 

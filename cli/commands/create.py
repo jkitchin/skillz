@@ -9,7 +9,7 @@ from rich.console import Console
 from rich.prompt import Confirm, Prompt
 
 from cli.config import Config
-from cli.utils import validate_description, validate_name
+from cli.utils import confirm_action, validate_description, validate_name
 
 console = Console()
 
@@ -268,6 +268,22 @@ def _create_skill_with_ai(base_path: Path, name: str, prompt: str, verbose: bool
         console.print("[red]Failed to generate skill content.[/red]")
         raise click.Abort()
 
+    # Security: Show preview and ask for confirmation
+    console.print("\n[bold yellow]⚠ AI-Generated Content Preview[/bold yellow]")
+    console.print("[dim]Review the generated content before saving.[/dim]\n")
+    console.print("[bold cyan]── SKILL.md ──[/bold cyan]")
+    # Show first 60 lines or entire content if smaller
+    lines = content.split("\n")
+    preview_lines = lines[:60]
+    console.print("\n".join(preview_lines))
+    if len(lines) > 60:
+        console.print(f"[dim]... ({len(lines) - 60} more lines)[/dim]")
+    console.print()
+
+    if not confirm_action("Save this skill?", default=True):
+        console.print("[yellow]Creation cancelled[/yellow]")
+        raise click.Abort()
+
     skill_path = base_path / name
     skill_path.mkdir(parents=True, exist_ok=True)
     skill_file = skill_path / "SKILL.md"
@@ -282,6 +298,22 @@ def _create_command_with_ai(base_path: Path, name: str, prompt: str, verbose: bo
     content = _generate_command_with_claude(name, prompt)
     if not content:
         console.print("[red]Failed to generate command content.[/red]")
+        raise click.Abort()
+
+    # Security: Show preview and ask for confirmation
+    console.print("\n[bold yellow]⚠ AI-Generated Content Preview[/bold yellow]")
+    console.print("[dim]Review the generated content before saving.[/dim]\n")
+    console.print(f"[bold cyan]── {name}.md ──[/bold cyan]")
+    # Show first 60 lines or entire content if smaller
+    lines = content.split("\n")
+    preview_lines = lines[:60]
+    console.print("\n".join(preview_lines))
+    if len(lines) > 60:
+        console.print(f"[dim]... ({len(lines) - 60} more lines)[/dim]")
+    console.print()
+
+    if not confirm_action("Save this command?", default=True):
+        console.print("[yellow]Creation cancelled[/yellow]")
         raise click.Abort()
 
     cmd_file = base_path / f"{name}.md"

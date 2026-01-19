@@ -8,8 +8,14 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from cli.config import Config
-from cli.utils import confirm_action, copy_file, find_agent_files
+from cli.config import Config, InvalidPlatformError, validate_platform
+from cli.utils import (
+    PathTraversalError,
+    confirm_action,
+    copy_file,
+    find_agent_files,
+    safe_path_join,
+)
 from cli.validator import AgentValidator
 
 console = Console()
@@ -115,6 +121,13 @@ def install(ctx, name, target, platform, force, dry_run):
     config = Config()
     verbose = ctx.obj.get("verbose", False) if ctx.obj else False
 
+    # Validate platform (security: prevent arbitrary paths)
+    try:
+        platform = validate_platform(platform)
+    except InvalidPlatformError as e:
+        console.print(f"[red]Error: {e}[/red]")
+        raise click.Abort()
+
     # Get repository path
     repo_path = config.get_repository_path()
     if not repo_path or not repo_path.exists():
@@ -136,9 +149,13 @@ def install(ctx, name, target, platform, force, dry_run):
             console.print(f"  - {error}")
         raise click.Abort()
 
-    # Get destination
+    # Get destination using safe_path_join (security: prevent path traversal)
     dest_dir = config.get_agents_dir(target, platform)
-    dest_path = dest_dir / source_path.name
+    try:
+        dest_path = safe_path_join(dest_dir, source_path.name)
+    except PathTraversalError as e:
+        console.print(f"[red]Security error: {e}[/red]")
+        raise click.Abort()
 
     if verbose:
         console.print(f"Source: {source_path}")
@@ -375,6 +392,22 @@ def create(ctx, name, target, platform, model, tools, prompt):
         content = _generate_agent_with_claude(name, prompt, model, tools)
         if not content:
             console.print("[red]Failed to generate agent with Claude[/red]")
+            raise click.Abort()
+
+        # Security: Show preview and ask for confirmation
+        console.print("\n[bold yellow]⚠ AI-Generated Content Preview[/bold yellow]")
+        console.print("[dim]Review the generated content before saving.[/dim]\n")
+        console.print(f"[bold cyan]── {name}.md ──[/bold cyan]")
+        # Show first 60 lines or entire content if smaller
+        lines = content.split("\n")
+        preview_lines = lines[:60]
+        console.print("\n".join(preview_lines))
+        if len(lines) > 60:
+            console.print(f"[dim]... ({len(lines) - 60} more lines)[/dim]")
+        console.print()
+
+        if not confirm_action("Save this agent?", default=True):
+            console.print("[yellow]Creation cancelled[/yellow]")
             raise click.Abort()
     else:
         # Create from template
