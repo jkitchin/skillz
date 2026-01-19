@@ -1,0 +1,87 @@
+# Dockerfile.ralph - Node.js sandbox for litdb-ts development
+#
+# This container is optimized for TypeScript development with:
+# - Node.js 20 LTS
+# - Python (for node-gyp/native modules)
+# - Build tools for better-sqlite3
+# - Pre-installed common npm packages
+
+FROM node:20-bookworm
+
+# Install build dependencies for native modules
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    make \
+    g++ \
+    git \
+    curl \
+    iputils-ping \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Install Claude CLI
+RUN curl -fsSL https://claude.ai/install.sh | sh
+
+# Create non-root user
+RUN useradd -m -s /bin/bash -u 1000 ralph && \
+    mkdir -p /workspace && \
+    chown -R ralph:ralph /workspace
+
+# Set npm cache to user-writable location
+ENV NPM_CONFIG_CACHE=/workspace/.npm-cache
+
+# Switch to non-root user
+USER ralph
+WORKDIR /workspace
+
+# Pre-install common dependencies to speed up first run
+# (Comment out if you want smaller image or need different versions)
+RUN mkdir -p /home/ralph/.npm-global && \
+    npm config set prefix '/home/ralph/.npm-global'
+
+ENV PATH="/home/ralph/.npm-global/bin:${PATH}"
+
+# Install global tools
+RUN npm install -g typescript ts-node
+
+# Default command
+CMD ["./ralph.sh"]
+
+# =============================================================================
+# USAGE
+# =============================================================================
+#
+# Build:
+#   docker build -t ralph-litdb -f Dockerfile.ralph .
+#
+# Run with network (for npm install):
+#   docker run --rm -it \
+#     -v $(pwd):/workspace \
+#     -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+#     ralph-litdb \
+#     bash -c "npm install && ./ralph.sh"
+#
+# Run without network (after dependencies installed):
+#   docker run --rm -it --network none \
+#     -v $(pwd):/workspace \
+#     -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+#     ralph-litdb
+#
+# =============================================================================
+# NETWORK CONSIDERATIONS
+# =============================================================================
+#
+# This project needs network access for:
+# 1. npm install (first run or new dependencies)
+# 2. OpenAlex/CrossRef API calls (optional, can be mocked)
+# 3. Downloading embedding models (first run)
+#
+# Recommended workflow:
+# 1. Run WITH network to install deps: ./ralph-sandbox.sh . 1
+# 2. Then run WITHOUT network for remaining iterations
+#
+# Or modify ralph-sandbox.sh to allow npm registry:
+#   --network bridge
+#   (then add firewall rules to block all except registry.npmjs.org)
+#
+# =============================================================================
