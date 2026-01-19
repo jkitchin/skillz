@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Ralph safety check hook - Block dangerous bash commands during Ralph mode."""
 
+from __future__ import annotations
+
 import json
 import os
 import re
@@ -12,13 +14,11 @@ DANGEROUS_PATTERNS = [
     (r"curl\s+.*\|\s*(ba)?sh", "Remote code execution via curl"),
     (r"wget\s+.*\|\s*(ba)?sh", "Remote code execution via wget"),
     (r"curl\s+-[a-zA-Z]*o\s*-.*\|\s*(ba)?sh", "Remote code execution via curl"),
-
     # Credential access patterns
     (r"(cat|less|more|head|tail|grep)\s+.*\.ssh/", "Accessing SSH credentials"),
     (r"(cat|less|more|head|tail|grep)\s+.*\.aws/", "Accessing AWS credentials"),
     (r"(cat|less|more|head|tail|grep)\s+.*\.config/gcloud", "Accessing GCloud credentials"),
     (r"(cat|less|more|head|tail|grep)\s+.*/etc/shadow", "Accessing shadow file"),
-
     # Destructive operations
     (r"rm\s+-[a-zA-Z]*r[a-zA-Z]*f[a-zA-Z]*\s+/\s*$", "Recursive delete of root"),
     (r"rm\s+-[a-zA-Z]*r[a-zA-Z]*f[a-zA-Z]*\s+/\*", "Recursive delete of root contents"),
@@ -26,27 +26,22 @@ DANGEROUS_PATTERNS = [
     (r"rm\s+-[a-zA-Z]*r[a-zA-Z]*f[a-zA-Z]*\s+~/\*", "Recursive delete of home contents"),
     (r"mkfs\.", "Filesystem creation (destructive)"),
     (r"dd\s+.*of=/dev/", "Direct disk write"),
-
     # Network reconnaissance
     (r"\bnmap\b", "Network scanning"),
     (r"\bnc\s+-[a-zA-Z]*l", "Netcat listener"),
     (r"\bnetcat\s+-[a-zA-Z]*l", "Netcat listener"),
-
     # System modification
     (r"chmod\s+777", "Overly permissive chmod"),
     (r"chown\s+root", "Changing ownership to root"),
     (r">\s*/etc/", "Writing to /etc"),
     (r"tee\s+/etc/", "Writing to /etc via tee"),
-
     # Exfiltration patterns
     (r"curl\s+.*-d\s+.*@", "Data exfiltration via curl POST"),
     (r"curl\s+.*--data.*@", "Data exfiltration via curl POST"),
-
     # Privilege escalation
     (r"\bsudo\b", "Privilege escalation attempt"),
     (r"\bsu\s+-", "Switching to root user"),
     (r"\bsu\s+root", "Switching to root user"),
-
     # Persistence mechanisms
     (r"crontab\s+-[a-zA-Z]*e", "Modifying crontab"),
     (r">>\s*~/\.bashrc", "Modifying .bashrc"),
@@ -63,13 +58,13 @@ def is_dangerous(command: str) -> tuple[bool, str]:
 
     # Get additional blocked patterns from environment
     extra_blocked = os.environ.get("RALPH_SAFETY_BLOCK", "")
-    extra_patterns = [(p.strip(), f"Custom blocked pattern: {p.strip()}")
-                      for p in extra_blocked.split(",") if p.strip()]
+    extra_patterns = [
+        (p.strip(), f"Custom blocked pattern: {p.strip()}")
+        for p in extra_blocked.split(",")
+        if p.strip()
+    ]
 
     all_patterns = DANGEROUS_PATTERNS + extra_patterns
-
-    # Normalize command for checking
-    cmd_lower = command.lower()
 
     for pattern, description in all_patterns:
         # Check if this pattern is allowed

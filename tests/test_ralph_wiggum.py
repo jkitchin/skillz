@@ -1,17 +1,17 @@
 """Tests for Ralph Wiggum mode skill and hooks."""
 
-import json
 import os
 import sys
-import pytest
 from pathlib import Path
 from unittest.mock import patch
+
+import pytest
 
 # Add hooks directory to path for testing
 sys.path.insert(0, str(Path(__file__).parent.parent / "hooks" / "ralph-safety-check"))
 sys.path.insert(0, str(Path(__file__).parent.parent / "hooks" / "ralph-cost-monitor"))
 
-from cli.validator import SkillValidator, HookValidator
+from cli.validator import HookValidator, SkillValidator  # noqa: I001
 
 
 class TestRalphWiggumSkill:
@@ -305,11 +305,7 @@ class TestRalphScriptSyntax:
         import subprocess
 
         script = scripts_dir / "ralph.sh"
-        result = subprocess.run(
-            ["bash", "-n", str(script)],
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(["bash", "-n", str(script)], capture_output=True, text=True)
         assert result.returncode == 0, f"Syntax error in ralph.sh: {result.stderr}"
 
     def test_ralph_sandbox_sh_syntax(self, scripts_dir):
@@ -317,11 +313,7 @@ class TestRalphScriptSyntax:
         import subprocess
 
         script = scripts_dir / "ralph-sandbox.sh"
-        result = subprocess.run(
-            ["bash", "-n", str(script)],
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(["bash", "-n", str(script)], capture_output=True, text=True)
         assert result.returncode == 0, f"Syntax error in ralph-sandbox.sh: {result.stderr}"
 
     def test_ralph_init_sh_syntax(self, scripts_dir):
@@ -329,11 +321,7 @@ class TestRalphScriptSyntax:
         import subprocess
 
         script = scripts_dir / "ralph-init.sh"
-        result = subprocess.run(
-            ["bash", "-n", str(script)],
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(["bash", "-n", str(script)], capture_output=True, text=True)
         assert result.returncode == 0, f"Syntax error in ralph-init.sh: {result.stderr}"
 
     def test_scripts_are_executable_format(self, scripts_dir):
@@ -350,7 +338,14 @@ class TestRalphDockerfile:
     @pytest.fixture
     def dockerfile(self):
         """Get the Dockerfile."""
-        return Path(__file__).parent.parent / "skills" / "development" / "ralph-wiggum" / "templates" / "Dockerfile.ralph"
+        return (
+            Path(__file__).parent.parent
+            / "skills"
+            / "development"
+            / "ralph-wiggum"
+            / "templates"
+            / "Dockerfile.ralph"
+        )
 
     def test_dockerfile_exists(self, dockerfile):
         """Test that the Dockerfile exists."""

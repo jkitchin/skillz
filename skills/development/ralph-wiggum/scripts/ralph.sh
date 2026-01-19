@@ -6,7 +6,7 @@
 #   max_iterations: 0 for unlimited (default), or positive integer
 #
 # Environment variables:
-#   ANTHROPIC_API_KEY     - Required: API key for Claude
+#   ANTHROPIC_API_KEY     - Optional: Not needed with Claude Code subscription
 #   RALPH_MODEL           - Optional: Model to use (default: sonnet)
 #   RALPH_I_KNOW_WHAT_IM_DOING=sandboxed - Override sandbox check (dangerous)
 

@@ -205,7 +205,7 @@ Docker wrapper that:
 | `RALPH_MAX_ITERATIONS` | `0` (unlimited) | Stop after N iterations |
 | `RALPH_MODEL` | `sonnet` | Claude model to use |
 | `RALPH_COST_LIMIT` | `50.00` | Max spend in USD (with cost monitor hook) |
-| `ANTHROPIC_API_KEY` | required | API authentication |
+| `ANTHROPIC_API_KEY` | optional | API key (not needed with Claude Code subscription) |
 
 ### Sandbox Override (Dangerous)
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Protect secrets hook - Block writes to sensitive files."""
 
+from __future__ import annotations
+
 import fnmatch
 import json
 import os

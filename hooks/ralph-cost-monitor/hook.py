@@ -40,7 +40,7 @@ def load_cost_file(filepath: Path) -> dict:
         try:
             with open(filepath) as f:
                 return json.load(f)
-        except (json.JSONDecodeError, IOError):
+        except (json.JSONDecodeError, OSError):
             pass
 
     # Create new tracking structure
@@ -106,13 +106,15 @@ def main():
     costs["summary"]["iterations"] += 1
 
     # Add iteration record
-    costs["iterations"].append({
-        "iteration": costs["summary"]["iterations"],
-        "timestamp": datetime.now().isoformat(),
-        "input_tokens": input_tokens,
-        "output_tokens": output_tokens,
-        "cost_usd": iteration_cost,
-    })
+    costs["iterations"].append(
+        {
+            "iteration": costs["summary"]["iterations"],
+            "timestamp": datetime.now().isoformat(),
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "cost_usd": iteration_cost,
+        }
+    )
 
     # Save updated costs
     save_cost_file(cost_file, costs)
@@ -140,7 +142,7 @@ Output tokens: {costs["summary"]["total_output_tokens"]:,}
     elif total_cost >= warn_threshold:
         message = f"""COST WARNING: Approaching limit
 
-Spent: ${total_cost:.2f} / ${cost_limit:.2f} ({total_cost/cost_limit*100:.1f}%)
+Spent: ${total_cost:.2f} / ${cost_limit:.2f} ({total_cost / cost_limit * 100:.1f}%)
 Iterations: {costs["summary"]["iterations"]}
 Remaining budget: ${cost_limit - total_cost:.2f}
 """

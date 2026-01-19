@@ -58,7 +58,7 @@ git log --oneline -10
 ## Environment Variables
 
 ```bash
-export ANTHROPIC_API_KEY=...     # Required
+export ANTHROPIC_API_KEY=...     # Optional (not needed with Claude Code subscription)
 export RALPH_MODEL=sonnet        # Model (sonnet/opus/haiku)
 export RALPH_COST_LIMIT=50.00    # Budget in USD
 ```

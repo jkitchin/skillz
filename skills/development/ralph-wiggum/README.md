@@ -210,7 +210,7 @@ RALPH_I_KNOW_WHAT_IM_DOING=sandboxed ./ralph.sh
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `ANTHROPIC_API_KEY` | required | API authentication |
+| `ANTHROPIC_API_KEY` | optional | API key (not needed with Claude Code subscription) |
 | `RALPH_MODEL` | `sonnet` | Claude model to use |
 | `RALPH_COST_LIMIT` | `50.00` | Max spend in USD |
 | `RALPH_I_KNOW_WHAT_IM_DOING` | unset | Override sandbox check |
