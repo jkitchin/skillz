@@ -14,9 +14,11 @@ class Config:
         "personal_skills_dir": "~/.claude/skills",
         "personal_commands_dir": "~/.claude/commands",
         "personal_hooks_dir": "~/.claude/hooks",
+        "personal_agents_dir": "~/.claude/agents",
         "project_skills_dir": ".claude/skills",
         "project_commands_dir": ".claude/commands",
         "project_hooks_dir": ".claude/hooks",
+        "project_agents_dir": ".claude/agents",
         "repository_path": None,  # Path to the local clone of skills repository
         "default_target": "personal",  # personal or project
         "default_platform": "claude",  # Default platform: claude, opencode, codex, gemini
@@ -25,24 +27,28 @@ class Config:
                 "skills_dir": "~/.claude/skills",
                 "commands_dir": "~/.claude/commands",
                 "hooks_dir": "~/.claude/hooks",
+                "agents_dir": "~/.claude/agents",
                 "settings_file": "~/.claude/settings.json",
             },
             "opencode": {
                 "skills_dir": "~/.config/opencode/skills",
                 "commands_dir": "~/.config/opencode/command",
                 "hooks_dir": "~/.config/opencode/hooks",
+                "agents_dir": "~/.config/opencode/agents",
                 "settings_file": "~/.config/opencode/settings.json",
             },
             "codex": {
                 "skills_dir": "~/.codex/skills",
                 "commands_dir": "~/.codex/commands",
                 "hooks_dir": "~/.codex/hooks",
+                "agents_dir": "~/.codex/agents",
                 "settings_file": "~/.codex/settings.json",
             },
             "gemini": {
                 "skills_dir": "~/.config/gemini/skills",
                 "commands_dir": "~/.config/gemini/commands",
                 "hooks_dir": "~/.config/gemini/hooks",
+                "agents_dir": "~/.config/gemini/agents",
                 "settings_file": "~/.config/gemini/settings.json",
             },
         },
@@ -145,5 +151,19 @@ class Config:
                 path = "~/.claude/settings.json"
         else:  # project
             path = ".claude/settings.json"
+
+        return Path(os.path.expanduser(path))
+
+    def get_agents_dir(self, target: str = "personal", platform: str = "claude") -> Path:
+        """Get the agents directory for a given target and platform."""
+        if target == "personal":
+            if platform in self.config["platforms"]:
+                path = self.config["platforms"][platform].get(
+                    "agents_dir", self.config.get("personal_agents_dir", "~/.claude/agents")
+                )
+            else:
+                path = self.config.get("personal_agents_dir", "~/.claude/agents")
+        else:  # project
+            path = self.config.get("project_agents_dir", ".claude/agents")
 
         return Path(os.path.expanduser(path))

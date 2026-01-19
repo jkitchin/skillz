@@ -3,7 +3,7 @@
 import click
 from rich.console import Console
 
-from cli.commands import config, create, hooks, info, install, search, uninstall, update
+from cli.commands import agents, config, create, hooks, info, install, search, uninstall, update
 from cli.commands.list import list_skills
 
 console = Console()
@@ -34,6 +34,7 @@ cli.add_command(info.info)
 cli.add_command(update.update)
 cli.add_command(create.create)
 cli.add_command(hooks.hooks)
+cli.add_command(agents.agents)
 
 
 if __name__ == "__main__":

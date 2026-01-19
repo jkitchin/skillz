@@ -16,11 +16,13 @@ A comprehensive CLI tool for managing AI assistant skills and slash commands for
 
 ## Features
 
-- **Install/Uninstall**: Easily manage skills and commands
+- **Install/Uninstall**: Easily manage skills, commands, hooks, and agents
 - **Search**: Find skills by keywords and descriptions
-- **Create**: Interactive wizard for creating new skills and commands
-- **Validate**: Ensure skills and commands meet format requirements
+- **Create**: Interactive wizard or AI-assisted creation for new skills, commands, hooks, and agents
+- **Validate**: Ensure skills, commands, hooks, and agents meet format requirements
 - **Multi-platform**: Support for OpenCode, Claude Code, Codex, and Gemini
+- **Hooks**: Lifecycle hooks for Claude Code (formatting, logging, security, notifications)
+- **Agents**: Specialized subagents for code review, debugging, testing, and documentation
 
 ## Installation
 
@@ -90,12 +92,41 @@ skillz create --type skill
 
 # With name specified
 skillz create --type skill --name my-awesome-skill
+
+# AI-assisted creation using Claude CLI
+skillz create --type skill --name my-skill --prompt "A skill for analyzing Python code style"
 ```
 
 ### Uninstall a Skill
 
 ```bash
 skillz uninstall skill-name
+```
+
+### Manage Hooks
+
+```bash
+# List available hooks
+skillz hooks list --target repo
+
+# Install a hook
+skillz hooks install lab-notebook
+
+# Create a hook (with AI)
+skillz hooks create my-hook --event PostToolUse --prompt "Format Python with black"
+```
+
+### Manage Agents
+
+```bash
+# List available agents
+skillz agents list --target repo
+
+# Install an agent
+skillz agents install code-reviewer
+
+# Create an agent (with AI)
+skillz agents create my-agent --prompt "An agent that reviews security vulnerabilities"
 ```
 
 ## Configuration
@@ -169,6 +200,49 @@ Command prompt content here...
 Use $ARGUMENTS or $1, $2, etc. for parameters.
 ```
 
+## Hooks Format
+
+Hooks are directories containing a `HOOK.md` file and a script (`hook.py` or `hook.sh`):
+
+```markdown
+---
+name: my-hook
+description: Brief description of what this hook does
+event: PostToolUse  # PreToolUse, PostToolUse, Stop, SessionStart, SessionEnd, etc.
+matcher: Write      # Optional: filter by tool name
+timeout: 30000      # Optional: timeout in milliseconds
+---
+
+# Hook Documentation
+
+Details about when and how this hook runs...
+```
+
+### Available Hook Events
+
+- `PreToolUse` / `PostToolUse`: Before/after tool execution
+- `UserPromptSubmit`: When user submits a prompt
+- `Stop`: When Claude needs user input
+- `SessionStart` / `SessionEnd`: Session lifecycle
+- `Notification`: For notifications
+
+## Agents Format
+
+Agents are markdown files with YAML frontmatter:
+
+```markdown
+---
+name: my-agent
+description: Clear description of what this agent does
+tools: Read, Write, Edit, Grep, Glob
+model: sonnet  # sonnet, opus, or haiku
+---
+
+# Agent Instructions
+
+Detailed instructions for this specialized agent...
+```
+
 ## Project Structure
 
 ```
@@ -176,14 +250,23 @@ skillz/
 ├── cli/                    # Python CLI tool
 │   ├── commands/          # CLI command implementations
 │   ├── config.py          # Configuration management
-│   ├── validator.py       # Skill/command validation
+│   ├── validator.py       # Skill/command/hook/agent validation
 │   └── utils.py           # Helper functions
 ├── skills/                # Skill repository
 │   ├── academic/
 │   ├── programming/
 │   └── research/
 ├── commands/              # Command repository
-├── templates/             # Templates for new skills
+├── hooks/                 # Hooks repository
+│   ├── lab-notebook/
+│   ├── prettier-on-save/
+│   └── ...
+├── agents/                # Agents repository
+│   ├── code-reviewer.md
+│   ├── debugger.md
+│   └── ...
+├── templates/             # Templates for new skills/hooks/agents
+├── docs/                  # Documentation
 └── tests/                 # Test suite
 ```
 
@@ -243,6 +326,27 @@ See the `skills/` directory for available skills organized by category:
 - **Academic**: PhD qualifier review, proposal assistance
 - **Programming**: Python (ASE, pymatgen), Emacs Lisp
 - **Research**: Electronic lab notebook management
+
+## Available Hooks
+
+See the `hooks/` directory for available hooks:
+
+- **lab-notebook**: Generate lab notebook entries from Claude Code sessions
+- **prettier-on-save**: Auto-format JS/TS/CSS/JSON files with Prettier
+- **black-on-save**: Auto-format Python files with Black
+- **protect-secrets**: Block writes to sensitive files like .env
+- **bash-logger**: Log all bash commands for audit
+- **notify-done**: Desktop notification when Claude needs input
+
+## Available Agents
+
+See the `agents/` directory for available agents:
+
+- **code-reviewer**: Analyzes code for quality, security issues, and best practices
+- **debugger**: Traces issues through code, analyzes errors, suggests fixes
+- **literature-searcher**: Searches academic papers and technical resources
+- **test-writer**: Generates comprehensive test cases and suites
+- **doc-writer**: Creates documentation, READMEs, and API docs
 
 ## Contributing
 
