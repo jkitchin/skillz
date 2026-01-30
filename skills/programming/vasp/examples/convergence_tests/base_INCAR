@@ -1,0 +1,24 @@
+# Base INCAR for convergence tests
+SYSTEM = Convergence test
+
+# Electronic (will be modified by test scripts)
+ENCUT = 520
+EDIFF = 1E-6
+PREC = Accurate
+NELM = 100
+
+# Static calculation (fast)
+IBRION = -1
+NSW = 0
+
+# Electronic structure
+ISMEAR = 1
+SIGMA = 0.2
+
+# Algorithm
+ALGO = Fast
+LREAL = Auto
+
+# Output
+LWAVE = .FALSE.
+LCHARG = .FALSE.

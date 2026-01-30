@@ -1,0 +1,26 @@
+# Basic Cu FCC relaxation
+SYSTEM = Cu bulk relaxation
+
+# Electronic minimization
+ENCUT = 520           # Energy cutoff (eV)
+EDIFF = 1E-6          # SCF convergence (eV)
+NELM = 100            # Max electronic steps
+PREC = Accurate       # Precision level
+
+# Ionic relaxation
+IBRION = 2            # Conjugate gradient optimizer
+ISIF = 3              # Relax ions + cell shape + volume
+NSW = 100             # Max ionic steps
+EDIFFG = -0.02        # Force convergence (eV/Å)
+
+# Electronic structure
+ISMEAR = 1            # Methfessel-Paxton (metals)
+SIGMA = 0.2           # Smearing width (eV)
+
+# Algorithm
+ALGO = Fast           # Fast RMM-DIIS
+LREAL = Auto          # Real-space projection for speed
+
+# Output
+LWAVE = .FALSE.       # Don't write WAVECAR
+LCHARG = .FALSE.      # Don't write CHGCAR

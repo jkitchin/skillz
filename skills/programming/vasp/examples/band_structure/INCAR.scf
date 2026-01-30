@@ -1,0 +1,28 @@
+# Step 1: Self-consistent calculation
+SYSTEM = Cu SCF for band structure
+
+# Electronic minimization
+ENCUT = 520
+EDIFF = 1E-6
+NELM = 100
+PREC = Accurate
+
+# No ionic relaxation
+IBRION = -1
+NSW = 0
+
+# Charge density generation
+ICHARG = 2            # From atomic charge
+LCHARG = .TRUE.       # Write CHGCAR (required!)
+
+# Electronic structure
+ISMEAR = 0            # Gaussian
+SIGMA = 0.05
+
+# Algorithm
+ALGO = Fast
+LREAL = Auto
+
+# Output
+LWAVE = .FALSE.
+# LCHARG = .TRUE. already set above

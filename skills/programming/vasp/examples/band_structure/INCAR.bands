@@ -1,0 +1,31 @@
+# Step 2: Non-self-consistent band structure
+SYSTEM = Cu band structure
+
+# Electronic minimization
+ENCUT = 520
+EDIFF = 1E-6
+NELM = 100
+PREC = Accurate
+
+# No ionic relaxation
+IBRION = -1
+NSW = 0
+
+# Non-self-consistent
+ICHARG = 11           # Read CHGCAR, no update
+LORBIT = 11           # Write PROCAR for orbital projections
+
+# Electronic structure
+ISMEAR = 0
+SIGMA = 0.05
+
+# More bands for visualization
+NBANDS = 30           # Show more bands
+
+# Algorithm
+ALGO = Fast
+LREAL = Auto
+
+# Output
+LWAVE = .FALSE.
+LCHARG = .FALSE.

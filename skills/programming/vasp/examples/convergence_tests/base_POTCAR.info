@@ -1,0 +1,33 @@
+# POTCAR Information
+
+This example requires the Cu PAW potential.
+
+## Location
+
+Copy from your VASP pseudopotential library:
+```bash
+cp $VASP_PP/potpaw_PBE/Cu/POTCAR .
+```
+
+## Details
+
+- **Element:** Cu
+- **Type:** PAW_PBE
+- **ENMAX:** 417.0 eV (from POTCAR header)
+- **Recommended ENCUT:** 520 eV (1.3 × ENMAX)
+- **Valence:** 3d10 4s1 (11 electrons)
+
+## Alternative Potentials
+
+- `Cu_pv`: Include 3p as valence (higher accuracy, slower)
+- `Cu_sv`: Include 3s 3p as valence (semi-core states)
+
+For this basic example, standard `Cu` potential is sufficient.
+
+## Verification
+
+After copying POTCAR, verify:
+```bash
+head -1 POTCAR
+# Should show: PAW_PBE Cu 06Sep2000
+```
