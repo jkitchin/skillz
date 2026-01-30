@@ -28,6 +28,134 @@ Use this skill when you need to:
 - **Systematic Assessment**: Conduct systematic reviews, meta-analyses, or structured literature analyses
 - **Knowledge Documentation**: Create comprehensive, citable references for complex research domains
 
+## CRITICAL: Citation Verification Requirements
+
+**Every citation included in a literature review MUST be verified before inclusion.** Hallucinated or fabricated citations undermine scientific integrity and are unacceptable.
+
+### Mandatory Verification Protocol
+
+Before including ANY citation in the review, you MUST complete one of these verification steps:
+
+1. **CrossRef API Verification** (Preferred for DOIs)
+   - Query `https://api.crossref.org/works/{doi}` via WebFetch
+   - Confirm the paper exists and metadata matches (title, authors, year)
+   - Extract the verified DOI for inclusion
+
+2. **WebSearch Verification** (For papers without known DOIs)
+   - Search for the exact paper title in quotes
+   - Verify the paper appears in search results with matching authors/year
+   - Obtain the actual URL or DOI from search results
+
+3. **Database Search Verification** (For specific databases)
+   - Search PubMed, arXiv, or domain-specific databases
+   - Confirm the paper exists with matching metadata
+   - Record the database identifier (PMID, arXiv ID, etc.)
+
+4. **User-Provided References** (Still require verification)
+   - Even if the user provides a reference, verify it exists
+   - Confirm the DOI resolves or URL is accessible
+   - Report any discrepancies to the user
+
+### Verification Workflow
+
+For each paper you intend to cite:
+
+```
+1. SEARCH: Find the paper via WebSearch or database query
+2. VERIFY: Confirm paper exists (check DOI via CrossRef or URL via WebFetch)
+3. EXTRACT: Record verified metadata (title, authors, journal, year, DOI/URL)
+4. CITE: Only include the citation after verification succeeds
+5. FLAG: If verification fails, DO NOT include the citation
+```
+
+### What NOT to Do (Forbidden Practices)
+
+**NEVER do any of the following:**
+
+1. **Never fabricate DOIs**
+   - Do NOT create DOIs by pattern-matching (e.g., guessing `10.1038/` + random numbers)
+   - Do NOT assume a DOI format based on publisher patterns
+   - If you don't have a verified DOI, don't include one
+
+2. **Never include unverified citations**
+   - Do NOT cite papers you haven't confirmed exist
+   - Do NOT assume a paper exists because it "sounds plausible"
+   - Do NOT include citations based on memory or training data alone
+
+3. **Never fabricate author names**
+   - Do NOT guess author names or initials
+   - Do NOT create plausible-sounding author combinations
+   - Only use author names from verified sources
+
+4. **Never guess bibliographic details**
+   - Do NOT invent page numbers, volume numbers, or issue numbers
+   - Do NOT fabricate journal names or conference proceedings
+   - Do NOT estimate publication years
+
+5. **Never cite papers you cannot verify**
+   - If CrossRef returns 404, the DOI doesn't exist - don't use it
+   - If WebSearch finds no matching paper, it may not exist - don't cite it
+   - If you cannot access verification, explicitly state "citation unverified"
+
+### Acceptable Citation Sources
+
+Citations may ONLY come from:
+
+| Source | Verification Method | What You Get |
+|--------|---------------------|--------------|
+| CrossRef API | WebFetch to `api.crossref.org/works/{doi}` | Verified DOI, title, authors, journal, year |
+| WebSearch Results | Search with paper title in quotes | URL to actual paper, metadata from results |
+| PubMed | Search or direct PMID lookup | PMID, verified metadata |
+| arXiv | Search or direct arXiv ID lookup | arXiv ID, verified metadata |
+| Google Scholar | WebSearch with `site:scholar.google.com` | Link to paper, citation metadata |
+| Publisher websites | WebFetch to paper URL | Confirmed existence, DOI if available |
+| User-provided references | Must still verify via above methods | Confirmed accuracy |
+
+### Handling Verification Failures
+
+When verification fails:
+
+1. **Paper not found**: Do NOT include the citation. Instead, note: "Unable to verify reference for [topic]. Further manual verification needed."
+
+2. **Partial match**: If metadata partially matches but differs (different year, slightly different title), report the discrepancy and use ONLY the verified information.
+
+3. **Access restricted**: If you cannot verify due to paywalls or access limits, explicitly mark as "[Verification pending - paywall]" and recommend manual verification.
+
+4. **Conflicting information**: If multiple sources give conflicting metadata, use the DOI-registered metadata from CrossRef as authoritative.
+
+### Citation Format After Verification
+
+Only after verification, format citations as:
+
+```
+Author(s). "Title." Journal, Volume(Issue), Pages (Year). DOI or URL
+
+Example (verified):
+Smith, J., & Jones, M. "Deep Learning for Medical Imaging." Nature Medicine, 29(3), 456-467 (2023). https://doi.org/10.1038/s41591-023-02345-6
+```
+
+If DOI is unavailable but URL is verified:
+```
+Smith, J., & Jones, M. "Deep Learning for Medical Imaging." Nature Medicine (2023). https://www.nature.com/articles/s41591-023-02345-6
+```
+
+### Verification Documentation
+
+For transparency, maintain a verification log:
+
+```
+| Citation | Verification Method | Status | Notes |
+|----------|---------------------|--------|-------|
+| Smith et al. 2023 | CrossRef API | Verified | DOI: 10.1038/xxx |
+| Jones 2022 | WebSearch | Verified | URL confirmed |
+| Brown et al. 2021 | CrossRef API | FAILED | DOI not found - excluded |
+| Lee 2020 | PubMed | Verified | PMID: 12345678 |
+```
+
+### Integration with Citation-Verifier Skill
+
+After completing the literature review, use the `citation-verifier` skill to perform a final audit of all citations in the document. This provides an independent verification pass to catch any errors.
+
 ## Literature Review Types
 
 ### 1. Narrative Literature Reviews
